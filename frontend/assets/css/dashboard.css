@@ -1,0 +1,10 @@
+/* dashboard.css - profit-loss + location dashboard helpers */
+
+.card{
+  border-radius: var(--r);
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  box-shadow: 0 12px 34px rgba(0,0,0,.30);
+  position:relative;
+  overflow:hidden;
+}

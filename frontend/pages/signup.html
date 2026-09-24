@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Insights - Create Account</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <link rel="stylesheet" href="/assets/css/auth.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root{
+          --bgA:#070f1e;
+          --bgB:#0b1d3a;
+          --bgC:#132a54;
+
+          --blue:#60a5fa;
+          --blue2:#3b82f6;
+          --green:#22c55e;
+          --red:#ef4444;
+
+          --cardA: rgba(15, 35, 65, 0.92);
+          --cardB: rgba(20, 40, 75, 0.86);
+          --stroke: rgba(59,130,246,0.35);
+          --strokeStrong: rgba(96,165,250,0.75);
+          --shadow: 0 22px 70px rgba(0,0,0,.45);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+
+            /* ✅ reset-password style bg */
+            background:
+              radial-gradient(1100px 600px at 20% 5%, rgba(96,165,250,.18), transparent 55%),
+              radial-gradient(900px 520px at 80% 30%, rgba(59,130,246,.16), transparent 60%),
+              radial-gradient(900px 520px at 50% 120%, rgba(16,185,129,.14), transparent 60%),
+              linear-gradient(180deg, var(--bgA), var(--bgB) 55%, var(--bgC));
+        }
+
+        /* Stars */
+        .stars{
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: .95;
+        }
+        .star{
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.25; }
+            50% { opacity: 1; }
+        }
+
+        /* Glow blobs */
+        .glow{
+            position: fixed;
+            inset:0;
+            pointer-events:none;
+            z-index:2;
+            background:
+              radial-gradient(800px 400px at 20% 10%, rgba(59,130,246,.22), transparent 60%),
+              radial-gradient(700px 380px at 80% 20%, rgba(16,185,129,.16), transparent 60%),
+              radial-gradient(900px 500px at 50% 120%, rgba(245,158,11,.10), transparent 60%);
+            mix-blend-mode: screen;
+            opacity:.9;
+        }
+
+        .signup-container{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            background: linear-gradient(135deg, var(--cardA) 0%, var(--cardB) 100%);
+            backdrop-filter: blur(14px);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid rgba(96,165,250,0.22);
+            transform: translateY(0);
+            transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+        }
+
+        .signup-container:hover{
+            transform: translateY(-2px);
+            border-color: rgba(96,165,250,0.55);
+            box-shadow: 0 26px 85px rgba(59,130,246,.12), var(--shadow);
+        }
+
+        .signup-container::before{
+            content:"";
+            position:absolute;
+            inset:-2px;
+            background:
+              radial-gradient(700px 160px at 25% 0%, rgba(96,165,250,.16), transparent 60%),
+              radial-gradient(700px 160px at 85% 25%, rgba(34,197,94,.12), transparent 65%),
+              radial-gradient(700px 200px at 50% 120%, rgba(59,130,246,.12), transparent 65%);
+            opacity:.95;
+            pointer-events:none;
+        }
+
+        .nav-bar{
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            background: rgba(10, 22, 40, 0.18);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-links{
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a{
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.25s;
+            position:relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active{
+            color: #60a5fa;
+            text-shadow: 0 0 18px rgba(96,165,250,.25);
+        }
+
+        .menu-icon{
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            user-select:none;
+            transition: transform .18s ease, color .25s ease;
+        }
+
+        .menu-icon:hover{
+            transform: translateY(-1px) scale(1.05);
+            color: rgba(96,165,250,.95);
+        }
+
+        .signup-content{
+            position: relative;
+            z-index: 2;
+            padding: 2rem 2rem 1.5rem;
+        }
+
+        .signup-header{ margin-bottom: 1.75rem; }
+        .signup-header h2{
+            font-size: 1.6rem;
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 650;
+            letter-spacing: .2px;
+        }
+        .signup-header p{
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .progress-steps{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .step{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+            transition: color .25s ease;
+        }
+        .step.active{ color: #60a5fa; }
+        .step.completed{ color: #22c55e; }
+
+        .step-number{
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: all .25s ease;
+        }
+        .step.active .step-number{
+            background: #3b82f6;
+            border-color: #60a5fa;
+            color: white;
+            box-shadow: 0 12px 30px rgba(59,130,246,.25);
+        }
+        .step.completed .step-number{
+            background: #22c55e;
+            border-color: #4ade80;
+            color: white;
+            box-shadow: 0 12px 30px rgba(34,197,94,.18);
+        }
+
+        .form-group{
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .input-wrapper{
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon{
+            position: absolute;
+            left: 1rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 1rem;
+            z-index: 2;
+            user-select:none;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"]{
+            width: 100%;
+            padding: 0.78rem 3.0rem 0.78rem 2.75rem;
+            background: rgba(10, 20, 40, 0.48);
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+            transition: transform .2s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease;
+        }
+
+        input::placeholder{
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.875rem;
+        }
+
+        input:hover{
+            transform: translateY(-1px);
+            border-color: rgba(96,165,250,0.55);
+        }
+
+        input:focus{
+            outline: none;
+            border-color: rgba(96,165,250,0.90);
+            background: rgba(10, 20, 40, 0.65);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+            transform: translateY(-1px);
+        }
+
+        /* show/hide password buttons */
+        .pw-toggle{
+            position:absolute;
+            right: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(59,130,246,0.18);
+            background: rgba(59,130,246,0.08);
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition: transform .18s ease, background .2s ease, border-color .2s ease;
+            user-select:none;
+            z-index: 3;
+            color: rgba(255,255,255,.92);
+        }
+        .pw-toggle:hover{
+            transform: translateY(-1px);
+            background: rgba(59,130,246,0.12);
+            border-color: rgba(96,165,250,0.55);
+        }
+
+        .password-note{
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* match pill */
+        .match-pill{
+            margin-top: 0.55rem;
+            display: inline-flex;
+            align-items:center;
+            gap: 8px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(96,165,250,0.25);
+            background: rgba(96,165,250,0.10);
+            color: rgba(255,255,255,.80);
+        }
+        .match-pill.ok{
+            border-color: rgba(34,197,94,0.40);
+            background: rgba(34,197,94,0.10);
+            color: rgba(220,252,231,.95);
+        }
+        .match-pill.bad{
+            border-color: rgba(239,68,68,0.40);
+            background: rgba(239,68,68,0.10);
+            color: rgba(254,226,226,.95);
+        }
+
+        .btn-signup{
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 750;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 1.35rem;
+            box-shadow: 0 14px 35px rgba(59,130,246,.25);
+            position:relative;
+            overflow:hidden;
+        }
+
+        .btn-signup::after{
+            content:"";
+            position:absolute;
+            top:50%;
+            left:50%;
+            width:0;
+            height:0;
+            background: rgba(255,255,255,0.22);
+            transform: translate(-50%,-50%);
+            border-radius: 999px;
+            opacity:0;
+            transition: width .5s ease, height .5s ease, opacity .7s ease;
+        }
+        .btn-signup:active::after{
+            width: 420px;
+            height: 420px;
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .btn-signup:hover{
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            transform: translateY(-1px);
+            box-shadow: 0 18px 45px rgba(59,130,246,.35);
+        }
+
+        .divider{
+            text-align: center;
+            margin: 1.5rem 0 1rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.825rem;
+        }
+
+        .social-login{
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-btn{
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            background: rgba(10, 20, 40, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform .2s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .social-btn:hover{
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(96,165,250,0.55);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(0,0,0,.25);
+        }
+
+        .social-btn.google{
+            background: rgba(234, 67, 53, 0.12);
+            border-color: rgba(234, 67, 53, 0.28);
+        }
+        .social-btn.facebook{
+            background: rgba(24, 119, 242, 0.12);
+            border-color: rgba(24, 119, 242, 0.28);
+        }
+        .social-btn.linkedin{
+            background: rgba(10, 102, 194, 0.12);
+            border-color: rgba(10, 102, 194, 0.28);
+        }
+
+        .login-link{
+            text-align: center;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-link a{
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 750;
+            transition: all .2s;
+        }
+
+        .login-link a:hover{
+            color: #93c5fd;
+            text-shadow: 0 0 18px rgba(96,165,250,.25);
+        }
+
+        .copyright{
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.75rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+            background: rgba(10, 22, 40, 0.16);
+            backdrop-filter: blur(10px);
+        }
+
+        /* small shake on invalid submit */
+        .shake{ animation: shake .35s ease; }
+        @keyframes shake{
+          0%,100%{ transform: translateX(0); }
+          20%{ transform: translateX(-6px); }
+          40%{ transform: translateX(6px); }
+          60%{ transform: translateX(-4px); }
+          80%{ transform: translateX(4px); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="glow"></div>
+
+    <div class="signup-container" id="signupCard">
+        <nav class="nav-bar">
+            <ul class="nav-links">
+                <li><a href="/home">Home</a></li>
+                <li><a href="/home#features">Features</a></li>
+                <li><a href="/home#about">About</a></li>
+                <li><a href="/login" class="active">Log In</a></li>
+            </ul>
+            <div class="menu-icon" id="menuBtn" title="Menu">☰</div>
+        </nav>
+
+        <div class="signup-content">
+            <div class="signup-header">
+                <h2>Create Your Account</h2>
+                <p>Sign up to track location insights and grow your business</p>
+            </div>
+
+            <div class="progress-steps" id="steps">
+                <div class="step completed" id="s1">
+                    <div class="step-number">✓</div>
+                    <span>Account</span>
+                </div>
+                <div class="step active" id="s2">
+                    <div class="step-number">2</div>
+                    <span>Business Info</span>
+                </div>
+                <div class="step" id="s3">
+                    <div class="step-number">3</div>
+                    <span>Complete</span>
+                </div>
+            </div>
+
+            <form id="signupForm">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input id="fullName" type="text" placeholder="Full Name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon">✉️</span>
+                        <input id="email" type="email" placeholder="Email Address" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input id="pw" type="password" placeholder="Password" required>
+                        <button class="pw-toggle" type="button" id="pwToggle" aria-label="Show password">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input id="pw2" type="password" placeholder="Confirm Password" required>
+                        <button class="pw-toggle" type="button" id="pwToggle2" aria-label="Show password">👁️</button>
+                    </div>
+
+                    <div class="password-note">
+                        <span>⚠️</span>
+                        <span>Password must be at least 8 characters</span>
+                    </div>
+
+                    <div class="match-pill" id="matchPill">Type to check password match</div>
+                </div>
+
+                <button type="submit" class="btn-signup">Sign Up</button>
+            </form>
+
+            <div class="divider">Or sign up with</div>
+
+            <div class="social-login">
+                <button class="social-btn google" type="button" title="Google">G</button>
+                <button class="social-btn facebook" type="button" title="Facebook">f</button>
+                <button class="social-btn linkedin" type="button" title="LinkedIn">in</button>
+            </div>
+
+            <div class="login-link">
+                Already have an account? <a href="/login">Log In</a>
+            </div>
+        </div>
+
+        <div class="copyright">
+            © 2024 BusinessInsights. All rights reserved
+        </div>
+    </div>
+
+    <script>
+        // Stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 160; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.opacity = (0.25 + Math.random() * 0.75).toFixed(2);
+            starsContainer.appendChild(star);
+        }
+
+        // Menu micro interaction (demo)
+        document.getElementById("menuBtn").addEventListener("click", () => {
+          // tiny friendly feedback
+          const card = document.getElementById("signupCard");
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+        });
+
+        // Show/Hide Password buttons
+        const pw = document.getElementById("pw");
+        const pw2 = document.getElementById("pw2");
+        const pwToggle = document.getElementById("pwToggle");
+        const pwToggle2 = document.getElementById("pwToggle2");
+
+        pwToggle.addEventListener("click", () => {
+          const isPass = pw.type === "password";
+          pw.type = isPass ? "text" : "password";
+          pwToggle.textContent = isPass ? "🙈" : "👁️";
+        });
+
+        pwToggle2.addEventListener("click", () => {
+          const isPass = pw2.type === "password";
+          pw2.type = isPass ? "text" : "password";
+          pwToggle2.textContent = isPass ? "🙈" : "👁️";
+        });
+
+        // Live password match + step progress feel
+        const matchPill = document.getElementById("matchPill");
+        const s2 = document.getElementById("s2");
+        const s3 = document.getElementById("s3");
+
+        function updateMatchUI(){
+          const a = pw.value;
+          const b = pw2.value;
+
+          // Step 2 looks "done" when basics filled
+          const ready = document.getElementById("fullName").value.trim() &&
+                        document.getElementById("email").value.trim() &&
+                        a.length >= 8;
+
+          s2.classList.toggle("completed", !!ready);
+          s2.classList.toggle("active", !ready);
+
+          if(!a && !b){
+            matchPill.className = "match-pill";
+            matchPill.textContent = "Type to check password match";
+            s3.classList.remove("active","completed");
+            return;
+          }
+
+          if(a.length < 8){
+            matchPill.className = "match-pill bad";
+            matchPill.textContent = "Password should be at least 8 characters";
+            s3.classList.remove("active","completed");
+            return;
+          }
+
+          if(a === b){
+            matchPill.className = "match-pill ok";
+            matchPill.textContent = "✅ Passwords matched";
+            s3.classList.add("active");
+          }else{
+            matchPill.className = "match-pill bad";
+            matchPill.textContent = "❌ Passwords not matched";
+            s3.classList.remove("active","completed");
+          }
+        }
+
+        ["input","keyup","change"].forEach(evt=>{
+          pw.addEventListener(evt, updateMatchUI);
+          pw2.addEventListener(evt, updateMatchUI);
+          document.getElementById("fullName").addEventListener(evt, updateMatchUI);
+          document.getElementById("email").addEventListener(evt, updateMatchUI);
+        });
+
+        // Submit
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const card = document.getElementById("signupCard");
+            const a = pw.value.trim();
+            const b = pw2.value.trim();
+
+            if(a.length < 8 || a !== b){
+              card.classList.remove("shake");
+              void card.offsetWidth;
+              card.classList.add("shake");
+              updateMatchUI();
+              return;
+            }
+
+            // mark complete
+            s3.classList.add("completed");
+            s3.classList.remove("active");
+
+            alert('Signup successful! Redirecting to dashboard...');
+            window.location.href = '/index';
+        });
+
+        // init
+        updateMatchUI();
+    </script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/auth.js"></script>
+
+</body>
+</html>

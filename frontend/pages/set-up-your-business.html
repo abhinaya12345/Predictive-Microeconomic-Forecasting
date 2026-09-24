@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Insights - Set Up Your Business</title>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/auth.js"></script>
+
+
+  <!-- Leaflet (Real Map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(180deg, #0a1628 0%, #1a2847 50%, #2d3f6f 100%);
+      color:white;
+      min-height:100vh;
+      position:relative;
+      padding-bottom: 200px;
+      overflow-x:hidden;
+    }
+
+    /* stars */
+    .stars{
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      pointer-events:none;
+      z-index:1;
+      opacity:.95;
+    }
+    .star{
+      position:absolute;
+      width:2px;height:2px;
+      background:rgba(255,255,255,0.6);
+      border-radius:50%;
+      animation:twinkle 3s infinite;
+    }
+    @keyframes twinkle{ 0%,100%{opacity:.25} 50%{opacity:1} }
+
+    /* extra glow blobs */
+    .glow{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:2;
+      background:
+        radial-gradient(800px 400px at 20% 10%, rgba(59,130,246,.22), transparent 60%),
+        radial-gradient(700px 380px at 80% 20%, rgba(16,185,129,.16), transparent 60%),
+        radial-gradient(900px 500px at 50% 120%, rgba(245,158,11,.10), transparent 60%);
+      mix-blend-mode: screen;
+      opacity:.95;
+    }
+
+    nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 1.5rem 4rem;
+      position:relative;
+      z-index:10;
+      border-bottom: 1px solid rgba(59,130,246,0.2);
+      backdrop-filter: blur(10px);
+      background: rgba(10, 22, 40, 0.25);
+    }
+
+    .logo{
+      display:flex; align-items:center; gap:.75rem;
+      font-size:1.5rem; font-weight:600;
+    }
+    .logo-icon{
+      width:32px; height:32px;
+      background: linear-gradient(135deg, #3b82f6, #f59e0b);
+      border-radius:6px; position:relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .logo-icon::before, .logo-icon::after{ content:''; position:absolute; background:white; opacity:.95; }
+    .logo-icon::before{ width:4px; height:14px; left:7px; bottom:6px; }
+    .logo-icon::after{ width:4px; height:20px; left:15px; bottom:6px; }
+
+    .nav-menu{ display:flex; gap:2.5rem; align-items:center; list-style:none; }
+    .nav-menu a{
+      color: rgba(255,255,255,0.8);
+      text-decoration:none;
+      font-size:1rem;
+      transition: color .25s;
+    }
+    .nav-menu a:hover{ color:#60a5fa; }
+    .nav-menu .login-btn{
+      border:1px solid rgba(255,255,255,0.35);
+      padding:.55rem 1.75rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(8px);
+    }
+
+    .container{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2.5rem 4rem;
+      position:relative;
+      z-index:10;
+    }
+
+    .page-header{ margin-bottom: 2rem; }
+    .page-header h1{ font-size:2.5rem; margin-bottom:.75rem; font-weight:600; }
+    .page-header p{ color: rgba(255,255,255,0.7); font-size:1.05rem; }
+
+    /* Tabs (Steps) */
+    .progress-tabs{ display:flex; gap:1rem; margin-bottom:2rem; }
+    .progress-tab{
+      flex:1;
+      padding:1rem 1.5rem;
+      background: rgba(15,35,65,0.35);
+      border: 2px solid rgba(59,130,246,0.25);
+      border-radius: 999px;
+      display:flex; align-items:center; gap:.75rem;
+      cursor:pointer;
+      transition: all .25s;
+      font-size:1rem;
+      user-select:none;
+    }
+    .progress-tab:hover{
+      border-color: rgba(59,130,246,0.55);
+      transform: translateY(-1px);
+    }
+    .progress-tab.active{
+      background: rgba(59,130,246,0.28);
+      border-color: rgba(59,130,246,0.65);
+      box-shadow: 0 18px 45px rgba(0,0,0,.25);
+    }
+    .tab-number{
+      width:28px; height:28px;
+      background: rgba(59,130,246,0.28);
+      border: 2px solid rgba(59,130,246,0.6);
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:.9rem;
+    }
+    .progress-tab.active .tab-number{ background:#3b82f6; }
+
+    .form-container{
+      background: rgba(15,35,65,0.45);
+      border: 2px solid rgba(59,130,246,0.35);
+      border-radius: 22px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.35);
+    }
+
+    .form-title{ font-size:1.75rem; margin-bottom:2rem; font-weight:600; }
+
+    .form-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .form-section{ display:flex; flex-direction:column; }
+
+    .form-label{
+      display:flex; align-items:center; gap:.5rem;
+      margin-bottom: 1rem;
+      font-size:1.05rem;
+      font-weight:500;
+    }
+    .form-label .icon{
+      width:18px; height:18px;
+      background: rgba(59,130,246,0.35);
+      border:1px solid rgba(59,130,246,0.6);
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.75rem;
+      cursor:help;
+      opacity:.95;
+    }
+    .form-label.checked::before{
+      content:'✓';
+      color:#22c55e;
+      margin-right:.25rem;
+      font-weight:bold;
+    }
+
+    select, input[type="text"], textarea{
+      width:100%;
+      padding:.875rem 1rem;
+      background: rgba(10, 20, 40, 0.45);
+      border: 2px solid rgba(59,130,246,0.35);
+      border-radius: 12px;
+      color:white;
+      font-size:.95rem;
+      font-family:inherit;
+      transition: all .25s;
+    }
+    select{
+      cursor:pointer;
+      appearance:none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position: right 1rem center;
+      padding-right:3rem;
+    }
+    select:focus, input:focus, textarea:focus{
+      outline:none;
+      border-color: rgba(96,165,250,0.9);
+      background: rgba(10, 20, 40, 0.7);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.22);
+    }
+    option{ background:#1e3a5f; color:white; }
+
+    .helper-text{
+      display:flex; align-items:center; gap:.5rem;
+      color: rgba(255,255,255,0.65);
+      font-size:.875rem;
+      margin-top:.5rem;
+    }
+    .helper-text::before{ content:'→'; color:#60a5fa; }
+
+    textarea{ min-height:100px; resize:vertical; }
+
+    .business-type-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:1rem;
+      margin-top:1rem;
+    }
+    .business-type-btn{
+      padding:1.35rem 1rem;
+      background: rgba(220, 235, 250, 0.96);
+      border: 2px solid transparent;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: all .25s;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .business-type-btn:hover{
+      background: rgba(240, 248, 255, 1);
+      border-color:#3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 18px 35px rgba(0,0,0,.18);
+    }
+    .business-type-btn.selected{
+      background: rgba(59,130,246,0.20);
+      border-color:#3b82f6;
+      box-shadow: 0 14px 35px rgba(59,130,246,.15);
+    }
+    .business-type-icon{ font-size:2.3rem; margin-bottom:.45rem; }
+    .business-type-label{ font-size:.9rem; color:#1f2937; font-weight:600; }
+
+    .other-btn{
+      grid-column: 1 / -1;
+      background: transparent;
+      border:2px solid rgba(59,130,246,0.35);
+      color:white;
+      padding:.875rem;
+    }
+    .other-btn .business-type-label{ color:white; }
+    .other-btn:hover{ background: rgba(59,130,246,0.18); }
+
+    /* Map section */
+    .map-section{
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(59,130,246,0.25);
+      border-radius: 16px;
+      padding: 1.1rem;
+      position:relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .map-preview{
+      width:100%;
+      height: 220px;
+      border-radius: 12px;
+      overflow:hidden;
+      position:relative;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(10,20,40,0.45);
+    }
+
+    #map{
+      width:100%;
+      height:100%;
+    }
+
+    .map-tooltip{
+      position:absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.95);
+      padding: .65rem .9rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      display:flex; align-items:center; gap:.5rem;
+      color:#1f2937;
+      font-size:.875rem;
+      z-index: 600;
+      max-width: 220px;
+    }
+    .tooltip-icon{
+      width:20px; height:20px;
+      background:#3b82f6;
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      color:white;
+      font-size:.75rem;
+    }
+
+    .map-actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin-top: .9rem;
+    }
+
+    .set-location-btn, .locate-btn{
+      width:100%;
+      padding:.9rem;
+      border:none;
+      border-radius: 12px;
+      color:white;
+      font-size:1rem;
+      font-weight:700;
+      cursor:pointer;
+      transition: all .25s;
+    }
+    .set-location-btn{
+      background: linear-gradient(135deg, #059669, #10b981);
+    }
+    .set-location-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(16,185,129,.25);
+    }
+    .locate-btn{
+      background: rgba(59,130,246,0.25);
+      border: 2px solid rgba(59,130,246,0.35);
+    }
+    .locate-btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(59,130,246,0.65);
+      background: rgba(59,130,246,0.32);
+    }
+
+    /* Experience */
+    .experience-levels{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:.75rem;
+    }
+    .experience-btn{
+      padding:.75rem;
+      background: rgba(15,35,65,0.35);
+      border:2px solid rgba(59,130,246,0.25);
+      border-radius: 12px;
+      color:white;
+      cursor:pointer;
+      transition: all .25s;
+      font-size:.95rem;
+    }
+    .experience-btn:hover{
+      background: rgba(59,130,246,0.22);
+      border-color: rgba(59,130,246,0.5);
+      transform: translateY(-1px);
+    }
+    .experience-btn.selected{
+      background: rgba(59,130,246,0.45);
+      border-color: #3b82f6;
+      box-shadow: 0 12px 26px rgba(59,130,246,.18);
+    }
+
+    /* Bottom */
+    .bottom-section{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:2rem;
+      gap: 1rem;
+    }
+
+    .step-info{
+      display:flex;
+      align-items:flex-start;
+      gap:1rem;
+      color: rgba(255,255,255,0.75);
+      font-size:.95rem;
+    }
+    .step-info-icon{
+      width:24px;height:24px;
+      background: rgba(59,130,246,0.25);
+      border:2px solid rgba(59,130,246,0.45);
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.9rem;
+      flex-shrink:0;
+    }
+    .skip-link{
+      color: rgba(255,255,255,0.55);
+      text-decoration:none;
+      font-size:.875rem;
+      display:block;
+      margin-top:.5rem;
+    }
+    .skip-link:hover{ color:#60a5fa; }
+
+    .btn-row{
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+    }
+
+    .next-btn, .back-btn, .submit-btn{
+      padding:.9rem 2.2rem;
+      border:none;
+      border-radius: 12px;
+      color:white;
+      font-size:1.05rem;
+      font-weight:700;
+      cursor:pointer;
+      transition: all .25s;
+      white-space:nowrap;
+    }
+    .next-btn, .submit-btn{
+      background: linear-gradient(135deg, #059669, #10b981);
+    }
+    .back-btn{
+      background: rgba(255,255,255,0.08);
+      border:2px solid rgba(255,255,255,0.18);
+    }
+    .next-btn:hover, .submit-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(16,185,129,.25);
+    }
+    .back-btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.10);
+    }
+
+    /* Step pages hide/show */
+    .step-page{ display:none; }
+    .step-page.active{ display:block; }
+
+    /* Goals UI */
+    .goals-grid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: .75rem;
+    }
+    .goal-card{
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(59,130,246,0.25);
+      cursor:pointer;
+      transition: all .25s;
+      display:flex;
+      gap: .75rem;
+      align-items:flex-start;
+    }
+    .goal-card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(59,130,246,0.55);
+      box-shadow: 0 18px 40px rgba(0,0,0,.22);
+    }
+    .goal-card.selected{
+      border-color: rgba(16,185,129,0.75);
+      box-shadow: 0 18px 40px rgba(16,185,129,.12);
+    }
+    .goal-emoji{ font-size: 1.6rem; }
+    .goal-title{ font-weight: 700; margin-bottom: .2rem; }
+    .goal-desc{ color: rgba(255,255,255,.70); font-size: .92rem; }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.6rem;
+      margin-top: .75rem;
+    }
+    .pill{
+      padding: .6rem .85rem;
+      border-radius: 999px;
+      background: rgba(59,130,246,0.18);
+      border: 2px solid rgba(59,130,246,0.22);
+      cursor:pointer;
+      transition: all .2s;
+      user-select:none;
+    }
+    .pill:hover{
+      border-color: rgba(59,130,246,0.55);
+      transform: translateY(-1px);
+    }
+    .pill.selected{
+      background: rgba(59,130,246,0.38);
+      border-color: rgba(59,130,246,0.75);
+    }
+
+    /* Review */
+    .review-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: .75rem;
+    }
+    .review-card{
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(59,130,246,0.25);
+    }
+    .review-card h4{
+      margin-bottom: .6rem;
+      font-size: 1.05rem;
+    }
+    .review-item{
+      display:flex;
+      justify-content:space-between;
+      gap: 1rem;
+      padding: .55rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.86);
+    }
+    .review-item:last-child{ border-bottom: none; }
+    .review-key{ color: rgba(255,255,255,0.65); }
+    .review-val{ text-align:right; word-break: break-word; }
+
+    .toast{
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,35,65,0.95);
+      border: 1px solid rgba(59,130,246,0.35);
+      color: white;
+      padding: .85rem 1rem;
+      border-radius: 12px;
+      z-index: 9999;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      display:none;
+      max-width: min(560px, 92vw);
+    }
+    .toast.show{ display:block; }
+
+    /* Bottom illustration */
+    .illustration-bottom{
+      position:fixed;
+      bottom:0; left:0; right:0;
+      height:180px;
+      z-index:5;
+      pointer-events:none;
+      opacity:.95;
+    }
+    .shop-building{ position:absolute; width:120px; height:140px; }
+    .shop-left{ left:5%; bottom:0; }
+    .shop-right{ right:5%; bottom:0; }
+
+    footer{
+      text-align:center;
+      padding: 2rem;
+      color: rgba(255,255,255,0.5);
+      font-size:.875rem;
+      position:relative;
+      z-index:10;
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 1024px){
+      .form-row{ grid-template-columns: 1fr; }
+      .business-type-grid{ grid-template-columns: repeat(2, 1fr); }
+      .goals-grid{ grid-template-columns: 1fr; }
+      .review-grid{ grid-template-columns: 1fr; }
+      nav, .container{ padding-left: 2rem; padding-right:2rem; }
+      .bottom-section{ flex-direction:column; align-items:flex-start; }
+      .btn-row{ width:100%; justify-content:flex-end; }
+    }
+
+    /* Leaflet theme tweaks */
+    .leaflet-control-attribution{
+      background: rgba(10,20,40,0.65) !important;
+      color: rgba(255,255,255,0.7) !important;
+      border-top-left-radius: 10px;
+      padding: 2px 8px;
+    }
+    .leaflet-container{ background: rgba(10,20,40,0.5); }
+
+    .address-suggestions{
+      position: relative;
+      margin-top: .4rem;
+      background: rgba(15,35,65,0.95);
+      border: 1px solid rgba(59,130,246,0.35);
+      border-radius: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      display: none;
+      z-index: 999;
+    }
+
+    .address-suggestion{
+      padding: .75rem 1rem;
+      cursor: pointer;
+      font-size: .9rem;
+      color: rgba(255,255,255,0.9);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .address-suggestion:last-child{
+      border-bottom: none;
+    }
+
+    .address-suggestion:hover{
+      background: rgba(59,130,246,0.25);
+    }
+
+    .address-suggestions{
+      position: relative;
+      margin-top: .4rem;
+      background: rgba(15,35,65,0.95);
+      border: 1px solid rgba(59,130,246,0.35);
+      border-radius: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      display: none;
+      z-index: 999;
+    }
+
+    .address-suggestion{
+      padding: .75rem 1rem;
+      cursor: pointer;
+      font-size: .9rem;
+      color: rgba(255,255,255,0.9);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .address-suggestion:last-child{
+      border-bottom: none;
+    }
+
+    .address-suggestion:hover{
+      background: rgba(59,130,246,0.25);
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="glow"></div>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span>Business Insights</span>
+    </div>
+    <ul class="nav-menu">
+      <li><a href="/home">Home</a></li>
+      <li><a href="/home#features">Features</a></li>
+      <li><a href="/home#about">About</a></li>
+      <li><a href="/login" class="login-btn">Log In</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Set Up Your Business</h1>
+      <p>Let's gather some details about your new business to provide you with the best insights.</p>
+    </div>
+
+    <!-- Step Tabs -->
+    <div class="progress-tabs">
+      <div class="progress-tab active" data-step="1">
+        <div class="tab-number">1</div>
+        <span>Business Info</span>
+      </div>
+      <div class="progress-tab" data-step="2">
+        <div class="tab-number">2</div>
+        <span>Business Goals</span>
+      </div>
+      <div class="progress-tab" data-step="3">
+        <div class="tab-number">3</div>
+        <span>Review</span>
+      </div>
+    </div>
+
+    <div class="form-container">
+
+      <!-- STEP 1 -->
+      <section class="step-page active" id="step1">
+        <h2 class="form-title">Business Info</h2>
+
+        <div class="form-row">
+          <!-- LEFT -->
+          <div class="form-section">
+            <div class="form-label checked">
+              Business Type
+              <span class="icon" title="Choose the category that best matches your shop">?</span>
+            </div>
+
+            <select id="businessTypeSelect">
+              <option value="">Select your business type...</option>
+              <option>Grocery</option>
+              <option>Salon</option>
+              <option>Clothing</option>
+              <option>Restaurant</option>
+              <option>Other</option>
+            </select>
+
+            <div class="business-type-grid" id="businessTypeGrid">
+              <button class="business-type-btn" type="button" data-type="Grocery">
+                <div class="business-type-icon">🛒</div>
+                <div class="business-type-label">Grocery</div>
+              </button>
+              <button class="business-type-btn" type="button" data-type="Salon">
+                <div class="business-type-icon">✂️</div>
+                <div class="business-type-label">Salon</div>
+              </button>
+              <button class="business-type-btn" type="button" data-type="Clothing">
+                <div class="business-type-icon">👗</div>
+                <div class="business-type-label">Clothing</div>
+              </button>
+              <button class="business-type-btn" type="button" data-type="Restaurant">
+                <div class="business-type-icon">🍽️</div>
+                <div class="business-type-label">Restaurant</div>
+              </button>
+              <button class="business-type-btn other-btn" type="button" data-type="Other">
+                <div class="business-type-label">Other</div>
+              </button>
+            </div>
+
+            <div class="form-label" style="margin-top: 1.8rem;">
+              Budget Range
+              <span class="icon" title="This helps estimate investment and cost insights">?</span>
+            </div>
+            <select id="budgetSelect">
+              <option value="">Select budget range...</option>
+              <option>Under $1,000/month</option>
+              <option>$1,000 - $3,000/month</option>
+              <option>$3,000 - $5,000/month</option>
+              <option>$5,000+/month</option>
+            </select>
+            <div class="helper-text">Provide an estimate of your investment range</div>
+
+            <!-- Address (NEW) -->
+            <div class="form-label" style="margin-top: 1.8rem;">
+              Address
+              <span class="icon" title="Auto-filled from the selected map location">?</span>
+            </div>
+            <input type="text" id="addressInput" placeholder="Type address and press Enter..." />
+
+            <!-- 🔽 Address suggestions dropdown -->
+            <div id="addressSuggestions" class="address-suggestions"></div>
+
+            <div class="form-label" style="margin-top: 1.4rem;">
+              Target Customers
+              <span class="icon" title="Example: Students, families, office workers">?</span>
+            </div>
+            <textarea id="targetCustomers" placeholder="Describe your target audience..."></textarea>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="form-section">
+            <div class="map-section">
+              <div class="map-preview">
+                <div id="map"></div>
+
+                <div class="map-tooltip">
+                  <div class="tooltip-icon">📍</div>
+                  Click on map to mark your shop location
+                </div>
+              </div>
+
+              <div class="map-actions">
+                <button class="set-location-btn" type="button" id="confirmLocationBtn">Set Location</button>
+                <button class="locate-btn" type="button" id="useMyLocationBtn">Use My Location</button>
+              </div>
+
+              <div class="helper-text" style="margin-top:.75rem;">
+                Selected coordinates: <span id="coordsText">—</span>
+              </div>
+            </div>
+
+            <div class="form-label" style="margin-top: 1.5rem;">
+              Shop Size
+              <span class="icon" title="Approximate shop size">?</span>
+            </div>
+            <select id="shopSizeSelect">
+              <option value="">Select shop size range...</option>
+              <option>Under 500 sq.ft.</option>
+              <option>500 - 1,000 sq.ft.</option>
+              <option>1,000 - 2,000 sq.ft.</option>
+              <option>2,000+ sq.ft.</option>
+            </select>
+            <div class="helper-text">Specify the size of your shop in sq. ft.</div>
+
+            <div class="form-label" style="margin-top: 1.5rem;">
+              Experience Level
+              <span class="icon" title="How experienced are you?">?</span>
+            </div>
+            <div class="experience-levels" id="expLevels">
+              <button class="experience-btn" type="button" data-exp="None">None</button>
+              <button class="experience-btn" type="button" data-exp="Beginner">Beginner</button>
+              <button class="experience-btn selected" type="button" data-exp="Intermediate">Intermediate</button>
+              <button class="experience-btn" type="button" data-exp="Expert">Expert</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step-page" id="step2">
+        <h2 class="form-title">Business Goals</h2>
+
+        <div class="form-row">
+          <div class="form-section">
+            <div class="form-label checked">
+              Primary Goals
+              <span class="icon" title="Pick what you want to achieve first">?</span>
+            </div>
+
+            <div class="goals-grid" id="goalsGrid">
+              <div class="goal-card" data-goal="Increase Sales">
+                <div class="goal-emoji">📈</div>
+                <div>
+                  <div class="goal-title">Increase Sales</div>
+                  <div class="goal-desc">Boost daily revenue and repeat customers.</div>
+                </div>
+              </div>
+              <div class="goal-card" data-goal="Improve Marketing">
+                <div class="goal-emoji">📣</div>
+                <div>
+                  <div class="goal-title">Improve Marketing</div>
+                  <div class="goal-desc">Grow reach via ads, social & offers.</div>
+                </div>
+              </div>
+              <div class="goal-card" data-goal="Reduce Costs">
+                <div class="goal-emoji">💸</div>
+                <div>
+                  <div class="goal-title">Reduce Costs</div>
+                  <div class="goal-desc">Optimize inventory and operational spend.</div>
+                </div>
+              </div>
+              <div class="goal-card" data-goal="Hire Staff">
+                <div class="goal-emoji">🧑‍💼</div>
+                <div>
+                  <div class="goal-title">Hire Staff</div>
+                  <div class="goal-desc">Plan staffing levels and shift needs.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-label" style="margin-top: 1.5rem;">
+              Monthly Revenue Target
+              <span class="icon" title="Just an estimate for planning">?</span>
+            </div>
+            <input type="text" id="revenueTarget" placeholder="Example: $5,000" />
+            <div class="helper-text">Used to generate your forecasts & insights</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label checked">
+              Focus Areas
+              <span class="icon" title="Select all that apply">?</span>
+            </div>
+            <div class="pill-row" id="focusPills">
+              <div class="pill" data-focus="Pricing">Pricing</div>
+              <div class="pill" data-focus="Offers">Offers</div>
+              <div class="pill" data-focus="Customer Retention">Customer Retention</div>
+              <div class="pill" data-focus="Inventory">Inventory</div>
+              <div class="pill" data-focus="Delivery">Delivery</div>
+              <div class="pill" data-focus="Online Presence">Online Presence</div>
+              <div class="pill" data-focus="Local SEO">Local SEO</div>
+              <div class="pill" data-focus="Branding">Branding</div>
+            </div>
+
+            <div class="form-label" style="margin-top: 1.5rem;">
+              Notes
+              <span class="icon" title="Anything extra you want us to consider">?</span>
+            </div>
+            <textarea id="goalNotes" placeholder="Example: I want more weekend customers..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step-page" id="step3">
+        <h2 class="form-title">Review</h2>
+
+        <div class="review-grid">
+          <div class="review-card">
+            <h4>Business Info</h4>
+            <div class="review-item"><span class="review-key">Business Type</span><span class="review-val" id="rvType">—</span></div>
+            <div class="review-item"><span class="review-key">Budget Range</span><span class="review-val" id="rvBudget">—</span></div>
+            <div class="review-item"><span class="review-key">Address</span><span class="review-val" id="rvAddress">—</span></div>
+            <div class="review-item"><span class="review-key">Coordinates</span><span class="review-val" id="rvCoords">—</span></div>
+            <div class="review-item"><span class="review-key">Shop Size</span><span class="review-val" id="rvShopSize">—</span></div>
+            <div class="review-item"><span class="review-key">Experience</span><span class="review-val" id="rvExp">—</span></div>
+          </div>
+
+          <div class="review-card">
+            <h4>Goals</h4>
+            <div class="review-item"><span class="review-key">Primary Goal</span><span class="review-val" id="rvGoal">—</span></div>
+            <div class="review-item"><span class="review-key">Revenue Target</span><span class="review-val" id="rvRevenue">—</span></div>
+            <div class="review-item"><span class="review-key">Focus Areas</span><span class="review-val" id="rvFocus">—</span></div>
+            <div class="review-item"><span class="review-key">Notes</span><span class="review-val" id="rvNotes">—</span></div>
+            <div class="review-item"><span class="review-key">Target Customers</span><span class="review-val" id="rvCustomers">—</span></div>
+          </div>
+        </div>
+
+        <div class="helper-text" style="margin-top: 1rem;">
+          If everything looks good, click Submit. (Demo: it will show JSON in an alert)
+        </div>
+      </section>
+
+      <!-- bottom section (shared) -->
+      <div class="bottom-section">
+        <div class="step-info">
+          <div class="step-info-icon">i</div>
+          <div>
+            <strong id="stepLabel">Step 1 of 3.</strong>
+            <span id="stepHint">Almost there! Let's fill in the business information</span>
+            <a href="#" class="skip-link" id="skipLink">Skip for now</a>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="back-btn" id="backBtn" type="button" style="display:none;">Back</button>
+          <button class="next-btn" id="nextBtn" type="button">Next</button>
+          <button class="submit-btn" id="submitBtn" type="button" style="display:none;">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom illustration (same as your SVGs) -->
+  <div class="illustration-bottom">
+    <svg class="shop-building shop-left" viewBox="0 0 120 140">
+      <rect x="10" y="60" width="100" height="70" fill="#1e3a5f" rx="4"/>
+      <rect x="10" y="50" width="100" height="15" fill="#ff6b35" rx="2"/>
+      <line x1="15" y1="50" x2="15" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="25" y1="50" x2="25" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="35" y1="50" x2="35" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="45" y1="50" x2="45" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="55" y1="50" x2="55" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="65" y1="50" x2="65" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="75" y1="50" x2="75" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="85" y1="50" x2="85" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="95" y1="50" x2="95" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="105" y1="50" x2="105" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <rect x="20" y="70" width="35" height="40" fill="#3b82f6" rx="2"/>
+      <rect x="65" y="70" width="35" height="40" fill="#3b82f6" rx="2"/>
+      <rect x="40" y="110" width="40" height="20" fill="#60a5fa" rx="2"/>
+      <rect x="15" y="35" width="25" height="15" fill="#fbbf24" rx="2"/>
+      <circle cx="5" cy="125" r="8" fill="#22c55e"/>
+      <circle cx="10" cy="120" r="7" fill="#16a34a"/>
+      <rect x="5" y="125" width="4" height="8" fill="#78350f"/>
+    </svg>
+
+    <svg class="shop-building shop-right" viewBox="0 0 120 140">
+      <rect x="10" y="60" width="100" height="70" fill="#1e3a5f" rx="4"/>
+      <rect x="10" y="50" width="100" height="15" fill="#ff6b35" rx="2"/>
+      <line x1="15" y1="50" x2="15" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="25" y1="50" x2="25" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="35" y1="50" x2="35" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="45" y1="50" x2="45" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="55" y1="50" x2="55" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="65" y1="50" x2="65" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="75" y1="50" x2="75" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="85" y1="50" x2="85" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="95" y1="50" x2="95" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <line x1="105" y1="50" x2="105" y2="65" stroke="#dc2626" stroke-width="3"/>
+      <rect x="20" y="70" width="30" height="50" fill="#3b82f6" rx="2"/>
+      <rect x="60" y="75" width="35" height="45" fill="#60a5fa" rx="2"/>
+      <rect x="35" y="110" width="45" height="20" fill="#1e40af" rx="2"/>
+      <circle cx="105" cy="125" r="8" fill="#22c55e"/>
+      <circle cx="110" cy="120" r="7" fill="#16a34a"/>
+      <rect x="107" y="125" width="4" height="8" fill="#78350f"/>
+    </svg>
+  </div>
+
+  <footer>© 2024 BusinessInsights. All rights reserved.</footer>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/setup-business.js"></script>
+
+  <script>
+    /********************
+     * State
+     ********************/
+    const state = {
+      step: 1,
+      businessType: "",
+      budget: "",
+      address: "",
+      lat: null,
+      lng: null,
+      shopSize: "",
+      experience: "Intermediate",
+      targetCustomers: "",
+
+      primaryGoal: "",
+      revenueTarget: "",
+      focusAreas: [],
+      goalNotes: ""
+    };
+
+    /********************
+     * Toast
+     ********************/
+    const toast = document.getElementById("toast");
+    let toastTimer = null;
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>toast.classList.remove("show"), 2200);
+    }
+
+    /********************
+     * Stars background
+     ********************/
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 150; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      starsContainer.appendChild(star);
+    }
+
+    /********************
+     * Step Navigation
+     ********************/
+    const tabs = document.querySelectorAll(".progress-tab");
+    const pages = {
+      1: document.getElementById("step1"),
+      2: document.getElementById("step2"),
+      3: document.getElementById("step3")
+    };
+
+    const stepLabel = document.getElementById("stepLabel");
+    const stepHint = document.getElementById("stepHint");
+    const skipLink = document.getElementById("skipLink");
+
+    const backBtn = document.getElementById("backBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function setActiveStep(step){
+      state.step = step;
+
+      // tab ui
+      tabs.forEach(t => t.classList.toggle("active", Number(t.dataset.step) === step));
+
+      // page ui
+      Object.values(pages).forEach(p => p.classList.remove("active"));
+      pages[step].classList.add("active");
+
+      // bottom actions
+      backBtn.style.display = step === 1 ? "none" : "inline-flex";
+      nextBtn.style.display = step === 3 ? "none" : "inline-flex";
+      submitBtn.style.display = step === 3 ? "inline-flex" : "none";
+
+      // hints
+      if(step === 1){
+        stepLabel.textContent = "Step 1 of 3.";
+        stepHint.textContent = "Almost there! Let's fill in the business information";
+        skipLink.style.display = "block";
+      } else if(step === 2){
+        stepLabel.textContent = "Step 2 of 3.";
+        stepHint.textContent = "Set clear goals so we can tailor the insights";
+        skipLink.style.display = "block";
+      } else {
+        stepLabel.textContent = "Step 3 of 3.";
+        stepHint.textContent = "Review your details before submitting";
+        skipLink.style.display = "none";
+        fillReview();
+      }
+
+      // map needs resize when step shows again
+      if(step === 1) setTimeout(() => map.invalidateSize(), 150);
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const step = Number(tab.dataset.step);
+        // allow switching but validate minimal for step1 -> step2
+        if(step > state.step){
+          if(state.step === 1 && !validateStep1()) return;
+          if(state.step === 2 && !validateStep2()) return;
+        }
+        setActiveStep(step);
+      });
+    });
+
+    backBtn.addEventListener("click", () => setActiveStep(state.step - 1));
+    nextBtn.addEventListener("click", () => {
+      if(state.step === 1 && !validateStep1()) return;
+      if(state.step === 2 && !validateStep2()) return;
+      setActiveStep(state.step + 1);
+    });
+
+    skipLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showToast("Skipped (you can fill later).");
+      setActiveStep(Math.min(3, state.step + 1));
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      // final validation
+      if (!validateStep1()) {
+        setActiveStep(1);
+        return;
+      }
+      if (!validateStep2()) {
+        setActiveStep(2);
+        return;
+      }
+
+      try {
+        // ✅ Save setup data to DB
+        await API.saveSetup({ ...state, user_id: 1 });
+
+        // ✅ Also store in localStorage for quick use
+        localStorage.setItem("businessSetupData", JSON.stringify(state));
+
+        showToast("Saved to DB ✅");
+
+        // ✅ Redirect to Profit Loss page (matches Flask route)
+        window.location.href = "/profit-loss-forecast";
+      } catch (e) {
+        console.error(e);
+        showToast("DB failed to save (API not found / server off)");
+      }
+    });
+
+    function validateStep1(){
+      readStep1Inputs();
+      if(!state.businessType){
+        showToast("Please select a Business Type.");
+        return false;
+      }
+      if(!state.lat || !state.lng){
+        showToast("Please select your shop location on the map.");
+        return false;
+      }
+      return true;
+    }
+
+    function validateStep2(){
+      readStep2Inputs();
+      if(!state.primaryGoal){
+        showToast("Select at least one Primary Goal.");
+        return false;
+      }
+      return true;
+    }
+
+    /********************
+     * Step 1 interactions
+     ********************/
+    const businessTypeSelect = document.getElementById("businessTypeSelect");
+    const businessTypeBtns = document.querySelectorAll("#businessTypeGrid .business-type-btn");
+    const budgetSelect = document.getElementById("budgetSelect");
+    const addressInput = document.getElementById("addressInput");
+    
+    let addrTimer = null;
+    addressInput.addEventListener("keydown", async (e) => {
+      if(e.key !== "Enter") return;
+      e.preventDefault();
+
+      const q = addressInput.value.trim();
+      if(!q){
+        showToast("Type an address first.");
+        return;
+      }
+
+      addressInput.blur();
+      showToast("Searching address...");
+
+      const found = await forwardGeocode(q);
+      if(!found){
+        showToast("Address not found. Try a different one.");
+        return;
+      }
+
+      // ✅ update state + marker + map using same function
+      state.address = found.display;
+      addressInput.value = found.display;
+
+      map.setView([found.lat, found.lng], 15, { animate:true });
+      setLocation(found.lat, found.lng, false);
+
+      showToast("Location updated ✅");
+    });
+
+    const targetCustomers = document.getElementById("targetCustomers");
+    const shopSizeSelect = document.getElementById("shopSizeSelect");
+    const expBtns = document.querySelectorAll("#expLevels .experience-btn");
+
+    function setBusinessType(type){
+      state.businessType = type;
+      businessTypeSelect.value = type || "";
+      businessTypeBtns.forEach(b => b.classList.toggle("selected", b.dataset.type === type));
+    }
+
+    businessTypeSelect.addEventListener("change", (e) => setBusinessType(e.target.value));
+
+    businessTypeBtns.forEach(btn => {
+      btn.addEventListener("click", () => setBusinessType(btn.dataset.type));
+    });
+
+    expBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        expBtns.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        state.experience = btn.dataset.exp;
+      });
+    });
+
+    function readStep1Inputs(){
+      state.budget = budgetSelect.value.trim();
+      state.shopSize = shopSizeSelect.value.trim();
+      state.targetCustomers = targetCustomers.value.trim();
+      // address is set by map
+    }
+
+    /********************
+     * Map (Leaflet + real tiles + reverse geocode)
+     ********************/
+    const coordsText = document.getElementById("coordsText");
+    const confirmLocationBtn = document.getElementById("confirmLocationBtn");
+    const useMyLocationBtn = document.getElementById("useMyLocationBtn");
+
+    const defaultCenter = [13.0827, 80.2707]; // Chennai
+    const map = L.map('map', { zoomControl: true }).setView(defaultCenter, 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker(defaultCenter, { draggable: true }).addTo(map);
+
+    async function reverseGeocode(lat, lng){
+      // Nominatim reverse geocoding (public; rate limited)
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+      try{
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        if(!res.ok) throw new Error("Geocode failed");
+        const data = await res.json();
+        return data.display_name || "";
+      }catch(e){
+        return "";
+      }
+    }
+
+    async function forwardGeocodeSingle(query){
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=1`;
+      try{
+        const res = await fetch(url);
+        const data = await res.json();
+        if(!data || !data.length) return null;
+
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+          display: data[0].display_name
+        };
+      }catch{
+        return null;
+      }
+    }
+
+    async function forwardGeocodeSuggestions(query){
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      return await res.json();
+    }
+
+    let geocodeTimer = null;
+
+    // ------------------------------
+    // Address <-> Map Sync (FIXED)
+    // ------------------------------
+    let lastManualAddressAt = 0;
+
+    // 1) forward geocode (single best match)
+    async function forwardGeocodeSingle(query){
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=1`;
+      try{
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        const data = await res.json();
+        if(!data || !data.length) return null;
+
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+          display_name: data[0].display_name || query
+        };
+      }catch(e){
+        return null;
+      }
+    }
+
+    // 2) forward geocode (suggestions list)
+    async function forwardGeocodeSuggestions(query){
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`;
+      try{
+        const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+        return await res.json();
+      }catch(e){
+        return [];
+      }
+    }
+
+    // render dropdown suggestions
+    function renderSuggestions(results){
+      suggestionsBox.innerHTML = "";
+
+      if(!results || results.length === 0){
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      results.forEach(place => {
+        const div = document.createElement("div");
+        div.className = "address-suggestion";
+        div.textContent = place.display_name;
+
+        div.addEventListener("click", async () => {
+          // user selected from dropdown
+          lastManualAddressAt = Date.now();
+
+          const lat = parseFloat(place.lat);
+          const lng = parseFloat(place.lon);
+
+          state.address = place.display_name;
+          addressInput.value = place.display_name;
+
+          map.setView([lat, lng], 15, { animate:true });
+          setLocation(lat, lng, true, true); // skip reverse overwrite
+          suggestionsBox.style.display = "none";
+        });
+
+        suggestionsBox.appendChild(div);
+      });
+
+      suggestionsBox.style.display = "block";
+    }
+
+    // debounce search while typing
+    addressInput.addEventListener("input", () => {
+      const q = addressInput.value.trim();
+
+      if(searchTimer) clearTimeout(searchTimer);
+
+      if(q.length < 3){
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      searchTimer = setTimeout(async () => {
+        const results = await forwardGeocodeSuggestions(q);
+        renderSuggestions(results);
+      }, 500);
+    });
+
+    // Enter key -> choose first best result
+    addressInput.addEventListener("keydown", async (e) => {
+      if(e.key !== "Enter") return;
+
+      e.preventDefault();
+      const q = addressInput.value.trim();
+      if(!q) return;
+
+      const found = await forwardGeocodeSingle(q);
+      if(!found){
+        showToast("Address not found. Try another.");
+        return;
+      }
+
+      lastManualAddressAt = Date.now();
+      state.address = found.display_name;
+      addressInput.value = found.display_name;
+
+      map.setView([found.lat, found.lng], 15, { animate:true });
+      setLocation(found.lat, found.lng, true, true); // skip reverse overwrite
+      suggestionsBox.style.display = "none";
+    });
+
+    // close dropdown if click outside
+    document.addEventListener("click", (e) => {
+      if(!suggestionsBox.contains(e.target) && e.target !== addressInput){
+        suggestionsBox.style.display = "none";
+      }
+    });
+
+
+    function setLocation(lat, lng, pan = true, skipReverse = false){
+      state.lat = lat;
+      state.lng = lng;
+
+      coordsText.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      marker.setLatLng([lat, lng]);
+      if(pan) map.panTo([lat, lng]);
+
+      if(geocodeTimer) clearTimeout(geocodeTimer);
+
+      geocodeTimer = setTimeout(async () => {
+
+        // ✅ If user typed address just now, don't overwrite it with reverse-geocode
+        if(!skipReverse){
+          addressInput.value = "Finding address...";
+          const addr = await reverseGeocode(lat, lng);
+          state.address = addr || "";
+          addressInput.value = addr || "Address not found (try another point)";
+        }
+
+        // ✅ Always save location for next page
+        localStorage.setItem("bi_location", JSON.stringify({
+          lat: state.lat,
+          lng: state.lng,
+          address: state.address || "",
+          ts: Date.now()
+        }));
+
+      }, 350);
+    }
+
+
+    map.on("click", (e) => setLocation(e.latlng.lat, e.latlng.lng, false));
+    marker.on("dragend", () => {
+      const p = marker.getLatLng();
+      setLocation(p.lat, p.lng, false);
+    });
+
+    confirmLocationBtn.addEventListener("click", () => {
+      if(!state.lat || !state.lng){
+        showToast("Select location on the map first.");
+        return;
+      }
+
+      localStorage.setItem("bi_location", JSON.stringify({
+        lat: state.lat,
+        lng: state.lng,
+        address: state.address || "",
+        ts: Date.now()
+      }));
+
+      showToast("Location saved ✅");
+    });
+
+    useMyLocationBtn.addEventListener("click", () => {
+      if(!navigator.geolocation){
+        showToast("Geolocation not supported.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          map.setView([lat, lng], 15);
+          setLocation(lat, lng, false);
+          showToast("Using your current location ✅");
+        },
+        () => showToast("Location permission denied / unavailable."),
+        { enableHighAccuracy:true, timeout:8000 }
+      );
+    });
+
+    // initial
+    setLocation(defaultCenter[0], defaultCenter[1], false);
+
+    // ===============================
+    // Address Suggestions (dropdown)
+    // ===============================
+    const suggestionsBox = document.getElementById("addressSuggestions");
+    let searchTimer = null;
+
+    function renderSuggestions(results){
+      suggestionsBox.innerHTML = "";
+
+      if (!results || results.length === 0){
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      results.forEach(place => {
+        const div = document.createElement("div");
+        div.className = "address-suggestion";
+        div.textContent = place.display_name;
+
+        div.onclick = () => {
+          addressInput.value = place.display_name;
+          state.address = place.display_name;
+
+          const lat = parseFloat(place.lat);
+          const lng = parseFloat(place.lon);
+
+          map.setView([lat, lng], 15);
+          setLocation(lat, lng, false);
+
+          suggestionsBox.style.display = "none";
+        };
+
+        suggestionsBox.appendChild(div);
+      });
+
+      suggestionsBox.style.display = "block";
+    }
+
+    // ✅ THIS is the input handler you asked about
+    addressInput.addEventListener("input", () => {
+      const query = addressInput.value.trim();
+      if (searchTimer) clearTimeout(searchTimer);
+
+      if (query.length < 3){
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      searchTimer = setTimeout(async () => {
+        const results = await forwardGeocodeSuggestions(query);
+        renderSuggestions(results);
+      }, 500);
+    });
+
+    // close suggestions if clicked outside
+    document.addEventListener("click", (e) => {
+      if (!suggestionsBox.contains(e.target) && e.target !== addressInput){
+        suggestionsBox.style.display = "none";
+      }
+    });
+
+    /********************
+     * Step 2 interactions
+     ********************/
+    const goalCards = document.querySelectorAll("#goalsGrid .goal-card");
+    const revenueTarget = document.getElementById("revenueTarget");
+    const focusPills = document.querySelectorAll("#focusPills .pill");
+    const goalNotes = document.getElementById("goalNotes");
+
+    goalCards.forEach(card => {
+      card.addEventListener("click", () => {
+        goalCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        state.primaryGoal = card.dataset.goal;
+      });
+    });
+
+    focusPills.forEach(pill => {
+      pill.addEventListener("click", () => {
+        const val = pill.dataset.focus;
+        const exists = state.focusAreas.includes(val);
+        if(exists){
+          state.focusAreas = state.focusAreas.filter(x => x !== val);
+          pill.classList.remove("selected");
+        } else {
+          state.focusAreas.push(val);
+          pill.classList.add("selected");
+        }
+      });
+    });
+
+    function readStep2Inputs(){
+      state.revenueTarget = revenueTarget.value.trim();
+      state.goalNotes = goalNotes.value.trim();
+    }
+
+    /********************
+     * Review fill
+     ********************/
+    function fillReview(){
+      readStep1Inputs();
+      readStep2Inputs();
+
+      document.getElementById("rvType").textContent = state.businessType || "—";
+      document.getElementById("rvBudget").textContent = state.budget || "—";
+      document.getElementById("rvAddress").textContent = state.address || "—";
+      document.getElementById("rvCoords").textContent =
+        (state.lat && state.lng) ? `${state.lat.toFixed(5)}, ${state.lng.toFixed(5)}` : "—";
+      document.getElementById("rvShopSize").textContent = state.shopSize || "—";
+      document.getElementById("rvExp").textContent = state.experience || "—";
+
+      document.getElementById("rvGoal").textContent = state.primaryGoal || "—";
+      document.getElementById("rvRevenue").textContent = state.revenueTarget || "—";
+      document.getElementById("rvFocus").textContent = state.focusAreas.length ? state.focusAreas.join(", ") : "—";
+      document.getElementById("rvNotes").textContent = state.goalNotes || "—";
+      document.getElementById("rvCustomers").textContent = state.targetCustomers || "—";
+    }
+
+    /********************
+     * Load defaults from UI (if needed)
+     ********************/
+    // default exp in state already set to Intermediate
+    // Keep experience selection consistent
+    setBusinessType("");
+
+    /********************
+     * Start
+     ********************/
+    setActiveStep(1);
+  </script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/setup-business.js"></script>
+
+</body>
+</html>

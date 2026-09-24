@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Insights</title>
+  <link rel="stylesheet" href="/assets/css/common.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+      background:
+        radial-gradient(1100px 600px at 20% 5%, rgba(96,165,250,.18), transparent 55%),
+        radial-gradient(900px 520px at 80% 30%, rgba(59,130,246,.16), transparent 60%),
+        radial-gradient(900px 520px at 50% 120%, rgba(16,185,129,.14), transparent 60%),
+        linear-gradient(180deg, #070f1e, #0b1d3a 55%, #132a54);
+      color: rgba(255,255,255,.95);
+      overflow-x:hidden;
+      min-height:100vh;
+      position:relative;
+    }
+
+    .stars{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:1;
+      opacity:.95;
+    }
+    .star{
+      position:absolute;
+      width:2px;height:2px;
+      background:rgba(255,255,255,.6);
+      border-radius:50%;
+      animation:twinkle 3s infinite;
+    }
+    @keyframes twinkle{ 0%,100%{opacity:.25} 50%{opacity:1} }
+
+    .glow-bg{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:2;
+      background:
+        radial-gradient(800px 400px at 20% 10%, rgba(59,130,246,.22), transparent 60%),
+        radial-gradient(700px 380px at 80% 20%, rgba(16,185,129,.16), transparent 60%),
+        radial-gradient(900px 500px at 50% 120%, rgba(245,158,11,.10), transparent 60%);
+      mix-blend-mode: screen;
+      opacity:.9;
+    }
+
+    nav, .hero, .section, .learn-more-section{
+      position:relative;
+      z-index:10;
+    }
+
+    /* ✅ Sticky nav for better scrolling UX */
+    nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 1.5rem 5rem;
+      border-bottom: 1px solid rgba(59,130,246,0.18);
+      backdrop-filter: blur(10px);
+      background: rgba(10, 22, 40, 0.20);
+      position: sticky;
+      top: 0;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      font-size:1.25rem;
+      font-weight:600;
+      letter-spacing:.3px;
+    }
+
+    .logo-icon{
+      width:24px;
+      height:24px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 6px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .logo-icon::before,
+    .logo-icon::after{
+      content:'';
+      position:absolute;
+      background:white;
+      opacity:.95;
+    }
+    .logo-icon::before{ width:3px; height:12px; left:5px; bottom:4px; }
+    .logo-icon::after{ width:3px; height:16px; left:11px; bottom:4px; }
+
+    .nav-menu{
+      display:flex;
+      gap:2.5rem;
+      align-items:center;
+      list-style:none;
+    }
+
+    .nav-menu a{
+      color: rgba(255,255,255,0.88);
+      text-decoration:none;
+      font-size:0.95rem;
+      transition: all 0.25s;
+      position:relative;
+      padding: 6px 2px;
+    }
+
+    .nav-menu a::after{
+      content:"";
+      position:absolute;
+      left:0; bottom:0;
+      width:0%;
+      height:2px;
+      background: linear-gradient(90deg, #60a5fa, #22c55e);
+      transition: width .25s ease;
+      border-radius: 99px;
+      opacity:.9;
+    }
+    .nav-menu a:hover{ color:#60a5fa; }
+    .nav-menu a:hover::after{ width:100%; }
+
+    /* ✅ Active nav state */
+    .nav-menu a.active{
+      color:#60a5fa;
+    }
+    .nav-menu a.active::after{
+      width:100%;
+    }
+
+    .nav-menu .login-btn{
+      border:1px solid rgba(255,255,255,0.28);
+      padding:0.5rem 1.5rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      transition: all 0.25s;
+    }
+    .nav-menu .login-btn:hover{
+      border-color:#60a5fa;
+      background: rgba(96,165,250,0.10);
+      transform: translateY(-1px);
+    }
+
+    .nav-menu .signup-btn{
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      padding:0.5rem 1.5rem;
+      border-radius: 12px;
+      transition: all 0.25s;
+      box-shadow: 0 12px 30px rgba(59,130,246,0.25);
+    }
+    .nav-menu .signup-btn:hover{
+      box-shadow: 0 18px 45px rgba(59,130,246,0.35);
+      transform: translateY(-1px);
+    }
+
+    .hero{
+      text-align:center;
+      padding: 5rem 2rem 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      scroll-margin-top: 90px; /* ✅ correct scroll offset for sticky nav */
+    }
+    .hero h1{
+      font-size:3.5rem;
+      font-weight:600;
+      margin-bottom:1.5rem;
+      line-height:1.2;
+      max-width:700px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+    .hero p{
+      font-size:1.1rem;
+      color: rgba(255,255,255,0.8);
+      margin-bottom:2.5rem;
+      max-width:500px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero-buttons{
+      display:flex;
+      gap:1rem;
+      justify-content:center;
+      margin-bottom: 0;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      padding:0.875rem 2rem;
+      border-radius: 14px;
+      font-size:1rem;
+      cursor:pointer;
+      transition: all 0.25s;
+      border:none;
+      font-weight:600;
+      position:relative;
+      overflow:hidden;
+    }
+    .btn::after{
+      content:"";
+      position:absolute;
+      top:50%; left:50%;
+      width:0; height:0;
+      background: rgba(255,255,255,0.25);
+      transform: translate(-50%,-50%);
+      border-radius: 999px;
+      transition: width .5s ease, height .5s ease, opacity .7s ease;
+      opacity:0;
+    }
+    .btn:active::after{
+      width: 300px;
+      height: 300px;
+      opacity: 1;
+      transition: 0s;
+    }
+
+    .btn-primary{
+      background: linear-gradient(135deg, #059669, #10b981);
+      color:white;
+      box-shadow: 0 16px 40px rgba(16,185,129,.18);
+    }
+    .btn-primary:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 22px 55px rgba(16,185,129,.25);
+    }
+
+    .btn-outline{
+      background: rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.26);
+      color:white;
+      backdrop-filter: blur(10px);
+    }
+    .btn-outline:hover{
+      border-color:#60a5fa;
+      background: rgba(96,165,250,0.12);
+      transform: translateY(-2px);
+    }
+
+    .section{
+      max-width:1400px;
+      margin:0 auto;
+      padding: 3rem 2rem;
+      scroll-margin-top: 90px; /* ✅ correct scroll offset for sticky nav */
+    }
+
+    .section-title{
+      text-align:center;
+      font-size:2rem;
+      font-weight:600;
+      margin-bottom:3rem;
+    }
+    .section-title span{ color: rgba(255,255,255,0.6); }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:2rem;
+      margin-bottom:2rem;
+    }
+
+    .card{
+      background: rgba(15,35,65,0.46);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(59,130,246,0.36);
+      border-radius: 20px;
+      padding: 2rem 1.5rem 1.75rem;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, filter .25s ease;
+      box-shadow: 0 18px 55px rgba(0,0,0,.25);
+      transform-style: preserve-3d;
+    }
+    .card::before{
+      content:'';
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(560px 240px at 22% 5%, rgba(96,165,250,.18), transparent 60%),
+        radial-gradient(560px 240px at 78% 35%, rgba(16,185,129,.10), transparent 65%),
+        radial-gradient(560px 240px at 50% 120%, rgba(245,158,11,.08), transparent 65%);
+      opacity: 1;
+      pointer-events:none;
+    }
+    .card::after{
+      content:"";
+      position:absolute;
+      top:-45%;
+      left:-60%;
+      width:60%;
+      height:220%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      transform: rotate(15deg);
+      opacity:.35;
+      animation: shimmer 7s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes shimmer{
+      0%{ transform: translateX(0) rotate(15deg); }
+      100%{ transform: translateX(240%) rotate(15deg); }
+    }
+
+    .card:hover{
+      border-color: rgba(96,165,250,0.85);
+      box-shadow: 0 26px 80px rgba(59,130,246,0.18);
+      transform: translateY(-7px);
+      filter: saturate(1.06);
+    }
+
+    .card-icon{
+      width:96px;
+      height:96px;
+      margin: 0 auto 1.25rem;
+      position:relative;
+      transform: translateZ(22px);
+    }
+
+    .icon-badge{
+      width:100%;
+      height:100%;
+      border-radius: 26px;
+      background:
+        radial-gradient(90px 70px at 25% 20%, rgba(255,255,255,.18), transparent 60%),
+        linear-gradient(135deg, rgba(59,130,246,.30), rgba(147,51,234,.18));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .icon-badge::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(120px 90px at 70% 80%, rgba(16,185,129,.12), transparent 65%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .icon-badge svg{
+      width:66px;
+      height:66px;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+    }
+
+    .card h3{
+      font-size:1.12rem;
+      margin-bottom:0.5rem;
+      font-weight:750;
+      letter-spacing:0.3px;
+      position:relative;
+      transform: translateZ(15px);
+    }
+    .card p{
+      color: rgba(255,255,255,0.72);
+      font-size:0.90rem;
+      letter-spacing:0.2px;
+      position:relative;
+      transform: translateZ(10px);
+    }
+
+    .learn-more-section{
+      text-align:center;
+      padding: 2rem 0 4rem;
+      position:relative;
+      z-index:10;
+      scroll-margin-top: 90px;
+    }
+
+    .reveal{
+      opacity:0;
+      transform: translateY(18px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .reveal.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1024px){
+      .cards{ grid-template-columns: repeat(2, 1fr); }
+      nav{ padding: 1.5rem 2rem; }
+      .hero h1{ font-size: 2.5rem; }
+    }
+    @media (max-width: 768px){
+      .cards{ grid-template-columns: 1fr; }
+      .nav-menu{ gap: 1.5rem; }
+      .hero h1{ font-size: 2rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="glow-bg"></div>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span>Business Insights</span>
+    </div>
+    <ul class="nav-menu">
+      <!-- ✅ Changed to real anchors -->
+      <li><a href="/#home" data-nav="home" class="active">Home</a></li>
+      <li><a href="/home#features" data-nav="features">Features</a></li>
+      <li><a href="/home#about" data-nav="about">About</a></li>
+      <li><a href="/login" class="login-btn">Log In</a></li>
+      <li><a href="/signup" class="signup-btn">Sign Up</a></li>
+    </ul>
+  </nav>
+
+  <!-- ✅ Added id="home" -->
+  <section class="hero" id="home">
+    <h1 class="reveal">Make smarter business decisions based on location insights.</h1>
+    <p class="reveal">Empower your business with data-driven insights<br>to maximize profit and minimize risks.</p>
+
+    <div class="hero-buttons reveal">
+      <a href="/set-up-your-business">
+        <button class="btn btn-primary">Get Started</button>
+      </a>
+      <a href="/location-analysis-dashboard">
+        <button class="btn btn-outline">Check Your Location</button>
+      </a>
+    </div>
+  </section>
+
+  <!-- ✅ Added id="features" -->
+  <section class="section" id="features">
+    <h2 class="section-title reveal"><span>Key Benefits - </span> Our Platform Does</h2>
+
+    <div class="cards">
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g1" x1="10" y1="60" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#22c55e"/>
+                  <stop offset="55%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#fbbf24"/>
+                </linearGradient>
+              </defs>
+              <path d="M14 56C22 46 32 46 40 36C49 25 58 27 66 18" stroke="url(#g1)" stroke-width="4" stroke-linecap="round"/>
+              <path d="M58 18H66V26" stroke="url(#g1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="16" y="40" width="8" height="22" rx="2" fill="rgba(96,165,250,.95)"/>
+              <rect x="30" y="34" width="8" height="28" rx="2" fill="rgba(59,130,246,.95)"/>
+              <rect x="44" y="26" width="8" height="36" rx="2" fill="rgba(147,197,253,.95)"/>
+              <circle cx="18" cy="22" r="6" fill="rgba(251,191,36,.95)"/>
+              <circle cx="30" cy="20" r="4.5" fill="rgba(245,158,11,.95)"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Profit Analysis</h3>
+        <p>Forecast Your Earnings</p>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g2" x1="10" y1="70" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#ef4444"/>
+                  <stop offset="55%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+              </defs>
+              <circle cx="40" cy="40" r="24" fill="rgba(255,255,255,.06)" stroke="url(#g2)" stroke-width="3"/>
+              <path d="M28 30C36 22 44 28 52 20" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+              <path d="M52 20v14" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="32" cy="34" r="4" fill="#ef4444"/>
+              <circle cx="48" cy="48" r="4" fill="#ef4444"/>
+              <path d="M34 46L46 34" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+              <path d="M24 58H56" stroke="rgba(96,165,250,.75)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M26 58l6-8 7 6 7-10 8 12" stroke="rgba(245,158,11,.9)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Inflation Trends</h3>
+        <p>Track Area Inflation</p>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g3" x1="10" y1="70" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#fbbf24"/>
+                  <stop offset="55%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#22c55e"/>
+                </linearGradient>
+              </defs>
+              <path d="M40 12c9 0 16 7 16 16 0 6-3 10-7 13-2 2-2 4-2 7H33c0-3 0-5-2-7-4-3-7-7-7-13 0-9 7-16 16-16Z"
+                    fill="rgba(251,191,36,.95)"/>
+              <rect x="32" y="50" width="16" height="7" rx="2" fill="rgba(120,53,15,.85)"/>
+              <rect x="34" y="58" width="12" height="4" rx="2" fill="rgba(69,26,3,.85)"/>
+              <path d="M18 62h44" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-linecap="round"/>
+              <path d="M20 62l10-10 10 6 10-14 10 18" stroke="url(#g3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="30" cy="52" r="2.5" fill="#60a5fa"/>
+              <circle cx="40" cy="58" r="2.5" fill="#60a5fa"/>
+              <circle cx="50" cy="44" r="2.5" fill="#22c55e"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Growth Ideas</h3>
+        <p>Boost Your Business</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Added id="about" -->
+  <section class="section" id="about">
+    <h2 class="section-title reveal">More Features for Your Business</h2>
+
+    <div class="cards">
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g4" x1="10" y1="70" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#60a5fa"/>
+                  <stop offset="60%" stop-color="#3b82f6"/>
+                  <stop offset="100%" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <rect x="14" y="26" width="40" height="26" rx="4" fill="rgba(255,255,255,.06)" stroke="rgba(96,165,250,.8)" stroke-width="2"/>
+              <rect x="12" y="54" width="44" height="4" rx="2" fill="rgba(59,130,246,.9)"/>
+              <path d="M20 44l6-6 6 4 8-10 8 12" stroke="rgba(96,165,250,.95)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M56 14c8 2 12 10 10 18-2 7-7 11-12 14l-4-8c4-2 7-4 8-8 1-4-1-8-4-9l2-7Z"
+                    fill="url(#g4)"/>
+              <path d="M52 46l-6 8" stroke="rgba(245,158,11,.95)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="60" cy="22" r="3" fill="rgba(255,255,255,.9)"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Startup Support</h3>
+        <p>Learn how to get started</p>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g5" x1="10" y1="70" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#3b82f6"/>
+                  <stop offset="50%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#22c55e"/>
+                </linearGradient>
+              </defs>
+              <path d="M18 24h44l4 10H14l4-10Z" fill="rgba(239,68,68,.9)"/>
+              <path d="M22 24v10M30 24v10M38 24v10M46 24v10M54 24v10" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
+              <rect x="18" y="34" width="40" height="28" rx="4" fill="rgba(255,255,255,.06)" stroke="rgba(96,165,250,.8)" stroke-width="2"/>
+              <rect x="24" y="40" width="14" height="12" rx="2" fill="rgba(96,165,250,.18)" stroke="rgba(96,165,250,.8)" stroke-width="2"/>
+              <rect x="42" y="40" width="10" height="18" rx="2" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.8)" stroke-width="2"/>
+              <circle cx="60" cy="56" r="10" fill="rgba(96,165,250,.18)" stroke="url(#g5)" stroke-width="3"/>
+              <path d="M67 63l7 7" stroke="rgba(96,165,250,.95)" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="60" cy="56" r="4" fill="rgba(147,197,253,.35)"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Franchise Insights</h3>
+        <p>Get start up on the market</p>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-icon">
+          <div class="icon-badge">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="g6" x1="10" y1="70" x2="70" y2="10">
+                  <stop offset="0%" stop-color="#fbbf24"/>
+                  <stop offset="55%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#ef4444"/>
+                </linearGradient>
+              </defs>
+              <rect x="16" y="30" width="34" height="24" rx="4" fill="rgba(120,53,15,.45)" stroke="rgba(251,191,36,.9)" stroke-width="2"/>
+              <rect x="16" y="30" width="34" height="7" rx="4" fill="rgba(120,53,15,.75)"/>
+              <rect x="29" y="22" width="8" height="8" rx="2" fill="rgba(251,191,36,.9)"/>
+              <circle cx="33" cy="44" r="3" fill="rgba(251,191,36,.95)"/>
+              <circle cx="60" cy="26" r="12" fill="rgba(239,68,68,.16)" stroke="rgba(239,68,68,.95)" stroke-width="3"/>
+              <circle cx="60" cy="26" r="7" fill="rgba(239,68,68,.22)" stroke="rgba(239,68,68,.95)" stroke-width="2"/>
+              <circle cx="60" cy="26" r="3" fill="rgba(239,68,68,.95)"/>
+              <circle cx="56" cy="58" r="9" fill="rgba(96,165,250,.16)" stroke="url(#g6)" stroke-width="3"/>
+              <path d="M50 64l-8 8" stroke="rgba(96,165,250,.95)" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="56" cy="58" r="4" fill="rgba(147,197,253,.35)"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Business Development</h3>
+        <p>Your best getaway leader...</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="learn-more-section reveal" id="learnmore">
+    <button class="btn btn-outline" id="learnMoreBtn">Learn More</button>
+  </div>
+
+  <script>
+    /* Stars */
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 160; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      starsContainer.appendChild(star);
+    }
+
+    /* ✅ Smooth scroll for menu links */
+    function smoothTo(id){
+      const el = document.querySelector(id);
+      if(!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const id = a.getAttribute('href');
+        if(!id || id === "#") return;
+        const el = document.querySelector(id);
+        if(el){
+          e.preventDefault();
+          smoothTo(id);
+        }
+      });
+    });
+
+    /* ✅ Learn More button scrolls to About section */
+    document.getElementById("learnMoreBtn").addEventListener("click", () => {
+      smoothTo("#about");
+    });
+
+    /* Card tilt */
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        const rx = ((y / r.height) - 0.5) * -8;
+        const ry = ((x / r.width) - 0.5) * 10;
+        card.style.transform = `translateY(-7px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+    });
+
+    /* Reveal */
+    const reveals = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(ent=>{
+        if(ent.isIntersecting){
+          ent.target.classList.add("show");
+          io.unobserve(ent.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    reveals.forEach(el => io.observe(el));
+
+    /* ✅ Active menu highlight while scrolling */
+    const navLinks = document.querySelectorAll('.nav-menu a[data-nav]');
+    const sections = [
+      { id: "home", el: document.getElementById("home") },
+      { id: "features", el: document.getElementById("features") },
+      { id: "about", el: document.getElementById("about") },
+    ];
+
+    const spy = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const activeId = entry.target.id;
+          navLinks.forEach(l=>{
+            l.classList.toggle("active", l.getAttribute("href") === "#" + activeId);
+          });
+        }
+      });
+    }, { threshold: 0.55 });
+
+    sections.forEach(s => s.el && spy.observe(s.el));
+  </script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/location-dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Insights - Enter Verification Code</title>
+    <link rel="stylesheet" href="/assets/css/common.css">
+    <link rel="stylesheet" href="/assets/css/auth.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root{
+          --bgA:#070f1e;
+          --bgB:#0b1d3a;
+          --bgC:#132a54;
+
+          --blue:#60a5fa;
+          --blue2:#3b82f6;
+          --green:#22c55e;
+          --amber:#f59e0b;
+          --red:#ef4444;
+
+          --stroke: rgba(96,165,250,0.28);
+          --strokeStrong: rgba(96,165,250,0.70);
+
+          --card: rgba(15, 35, 65, 0.50);
+          --shadow: 0 22px 70px rgba(0,0,0,.45);
+        }
+
+        body{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            color: white;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+
+            /* ✅ reset-password style bg */
+            background:
+              radial-gradient(1100px 600px at 20% 5%, rgba(96,165,250,.18), transparent 55%),
+              radial-gradient(900px 520px at 80% 30%, rgba(59,130,246,.16), transparent 60%),
+              radial-gradient(900px 520px at 50% 120%, rgba(16,185,129,.14), transparent 60%),
+              linear-gradient(180deg, var(--bgA), var(--bgB) 55%, var(--bgC));
+        }
+
+        /* Stars */
+        .stars{
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: .95;
+        }
+        .star{
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.25; }
+            50% { opacity: 1; }
+        }
+
+        /* Glow blobs */
+        .glow{
+            position: fixed;
+            inset:0;
+            pointer-events:none;
+            z-index:2;
+            background:
+              radial-gradient(800px 400px at 20% 10%, rgba(59,130,246,.22), transparent 60%),
+              radial-gradient(700px 380px at 80% 20%, rgba(16,185,129,.16), transparent 60%),
+              radial-gradient(900px 500px at 50% 120%, rgba(245,158,11,.10), transparent 60%);
+            mix-blend-mode: screen;
+            opacity:.9;
+        }
+
+        nav{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding: 1.5rem 4rem;
+            position:relative;
+            z-index:10;
+            border-bottom: 1px solid rgba(59,130,246,0.20);
+            background: rgba(10, 22, 40, 0.18);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo{
+            display:flex;
+            align-items:center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 650;
+            letter-spacing:.2px;
+        }
+
+        .logo-icon{
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #f59e0b);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 14px 35px rgba(59,130,246,.18);
+            overflow:hidden;
+        }
+        .logo-icon::before, .logo-icon::after{
+            content:'';
+            position:absolute;
+            background:white;
+            border-radius:2px;
+            opacity:.95;
+        }
+        .logo-icon::before{ width:4px; height:14px; left:8px; bottom:7px; }
+        .logo-icon::after{ width:4px; height:20px; left:16px; bottom:7px; }
+
+        .nav-menu{
+            display:flex;
+            gap: 2.5rem;
+            align-items:center;
+            list-style:none;
+        }
+
+        .nav-menu a{
+            color: rgba(255, 255, 255, 0.82);
+            text-decoration:none;
+            font-size: 1rem;
+            transition: all .25s;
+        }
+        .nav-menu a:hover{
+            color: var(--blue);
+            text-shadow: 0 0 18px rgba(96,165,250,.25);
+        }
+
+        .nav-menu .login-btn{
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 0.55rem 1.75rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
+            transition: all .25s;
+        }
+        .nav-menu .login-btn:hover{
+            border-color: rgba(96,165,250,0.75);
+            background: rgba(96,165,250,0.10);
+            transform: translateY(-1px);
+        }
+
+        .content-container{
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            position:relative;
+            z-index:10;
+        }
+
+        .content-header{ margin-bottom: 1.5rem; }
+        .content-header h1{
+            font-size: 2.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 650;
+            letter-spacing:.2px;
+        }
+        .content-header p{
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .email-display{
+            color: white;
+            font-weight: 650;
+            margin-top: 0.75rem;
+            opacity:.95;
+        }
+
+        .instruction-text{
+            color: rgba(255, 255, 255, 0.80);
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+        }
+
+        /* Card shell */
+        .cardShell{
+            background: var(--card);
+            border: 1px solid var(--stroke);
+            border-radius: 20px;
+            padding: 22px 18px 18px;
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow:hidden;
+        }
+        .cardShell::before{
+            content:"";
+            position:absolute; inset:-2px;
+            background:
+              radial-gradient(700px 160px at 25% 0%, rgba(96,165,250,.16), transparent 60%),
+              radial-gradient(700px 160px at 85% 25%, rgba(34,197,94,.12), transparent 65%),
+              radial-gradient(700px 200px at 50% 120%, rgba(59,130,246,.12), transparent 65%);
+            opacity:.95;
+            pointer-events:none;
+        }
+        .cardShell > *{ position:relative; z-index:2; }
+
+        .code-inputs{
+            display:flex;
+            gap: 0.75rem;
+            justify-content:center;
+            margin-bottom: 1.25rem;
+            flex-wrap: nowrap;
+        }
+
+        .code-input{
+            width: 60px;
+            height: 70px;
+            background: rgba(10, 20, 40, 0.48);
+            border: 1px solid rgba(59,130,246,0.28);
+            border-radius: 14px;
+            color: white;
+            font-size: 1.75rem;
+            text-align: center;
+            font-weight: 750;
+            transition: transform .2s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease;
+        }
+
+        .code-input:hover{
+            transform: translateY(-1px);
+            border-color: rgba(96,165,250,0.55);
+        }
+
+        .code-input:focus{
+            outline:none;
+            border-color: rgba(96,165,250,0.90);
+            background: rgba(10, 20, 40, 0.65);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+            transform: translateY(-1px);
+        }
+
+        .code-input.bad{
+            border-color: rgba(239,68,68,0.75) !important;
+            box-shadow: 0 0 0 4px rgba(239,68,68,0.18) !important;
+        }
+
+        .shake{
+            animation: shake .35s ease;
+        }
+        @keyframes shake{
+            0%{ transform: translateX(0); }
+            20%{ transform: translateX(-8px); }
+            40%{ transform: translateX(7px); }
+            60%{ transform: translateX(-5px); }
+            80%{ transform: translateX(4px); }
+            100%{ transform: translateX(0); }
+        }
+
+        .btn-primary{
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 750;
+            cursor: pointer;
+            transition: transform .2s ease, box-shadow .25s ease, filter .25s ease;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 18px 45px rgba(59,130,246,.22);
+            position: relative;
+            overflow:hidden;
+        }
+
+        .btn-primary:hover{
+            transform: translateY(-2px);
+            box-shadow: 0 22px 60px rgba(59,130,246,.32);
+            filter: brightness(1.03);
+        }
+
+        .btn-primary:disabled{
+            opacity:.65;
+            cursor:not-allowed;
+            transform:none;
+            box-shadow: 0 12px 26px rgba(0,0,0,.25);
+        }
+
+        .btn-primary::after{
+            content:"";
+            position:absolute;
+            left:50%;
+            top:50%;
+            width:0; height:0;
+            background: rgba(255,255,255,.22);
+            transform: translate(-50%,-50%);
+            border-radius: 999px;
+            opacity:0;
+            transition: width .5s ease, height .5s ease, opacity .7s ease;
+        }
+        .btn-primary:active::after{
+            width: 520px;
+            height: 520px;
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .resend-link{
+            text-align:center;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .resend-link a{
+            color: white;
+            text-decoration:none;
+            font-weight: 750;
+            transition: all .25s;
+        }
+
+        .resend-link a:hover{
+            color: var(--blue);
+            text-shadow: 0 0 18px rgba(96,165,250,.25);
+        }
+
+        .resend-link a.disabled{
+            pointer-events:none;
+            opacity:.55;
+        }
+
+        footer{
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+            z-index: 10;
+            background: rgba(10, 22, 40, 0.14);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(59,130,246,0.12);
+        }
+
+        .toast{
+            position: fixed;
+            bottom: 88px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(10, 20, 40, 0.92);
+            border: 1px solid rgba(96,165,250,0.30);
+            color: white;
+            padding: .85rem 1rem;
+            border-radius: 14px;
+            z-index: 9999;
+            box-shadow: 0 18px 50px rgba(0,0,0,.35);
+            display:none;
+            max-width: min(520px, 92vw);
+            backdrop-filter: blur(10px);
+        }
+        .toast.show{
+            display:block;
+            animation: toastIn .25s ease forwards;
+        }
+        @keyframes toastIn{
+            from{ opacity:0; transform: translateX(-50%) translateY(10px); }
+            to{ opacity:1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @media (max-width: 768px){
+            nav{ padding: 1rem 1.25rem; }
+            .content-container{ padding: 2rem 1.25rem; }
+            .content-header h1{ font-size: 1.75rem; }
+
+            .code-input{
+                width: 50px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="glow"></div>
+
+    <nav>
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <span>Business Insights</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="/home">Home</a></li>
+            <li><a href="/home#features">Features</a></li>
+            <li><a href="/home#about">About</a></li>
+            <li><a href="/login" class="login-btn">Log In</a></li>
+        </ul>
+    </nav>
+
+    <div class="content-container">
+        <div class="content-header">
+            <h1>Enter Verification Code</h1>
+            <p>We have sent a 6-digit verification code to:</p>
+            <p class="email-display" id="emailDisplay">example@email.com</p>
+        </div>
+
+        <div class="cardShell" id="cardShell">
+            <p class="instruction-text">Please enter the code below to reset your password.</p>
+
+            <div class="code-inputs" id="codeInputsWrap">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" />
+            </div>
+
+            <button class="btn-primary" id="verifyBtn" onclick="verifyCode()" disabled>Verify</button>
+
+            <div class="resend-link">
+                Didn't receive the code?
+                <a href="#" id="resendLink" onclick="resendCode(event)">Resend Code</a>
+                <span id="timerText" style="opacity:.65;"></span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2024 BusinessInsights. All rights reserved.
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 160; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.opacity = (0.25 + Math.random() * 0.75).toFixed(2);
+            starsContainer.appendChild(star);
+        }
+
+        // Read email from query param (optional): /verification?email=abc@x.com
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get("email");
+        if(email) document.getElementById("emailDisplay").textContent = email;
+
+        const cardShell = document.getElementById("cardShell");
+        const codeInputs = document.querySelectorAll('.code-input');
+        const verifyBtn = document.getElementById("verifyBtn");
+
+        function toast(msg){
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(()=>t.classList.remove("show"), 2200);
+        }
+
+        function getCode(){
+            return Array.from(codeInputs).map(i => i.value).join('');
+        }
+
+        function setVerifyEnabled(){
+            verifyBtn.disabled = getCode().length !== 6;
+        }
+
+        // Restrict to digits, auto-advance, backspace nav, paste 6 digits
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const v = e.target.value.replace(/\D/g,'');
+                e.target.value = v.slice(0,1);
+
+                if (e.target.value.length === 1 && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                }
+                setVerifyEnabled();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    codeInputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                const digits = (text || '').replace(/\D/g,'').slice(0,6);
+                if(!digits) return;
+
+                e.preventDefault();
+                digits.split('').forEach((d, i) => {
+                    if(codeInputs[i]) codeInputs[i].value = d;
+                });
+                codeInputs[Math.min(digits.length, 6)-1]?.focus();
+                setVerifyEnabled();
+            });
+        });
+
+        // focus first input on load
+        setTimeout(()=>codeInputs[0].focus(), 120);
+
+        function markError(){
+            cardShell.classList.remove("shake");
+            void cardShell.offsetWidth; // reflow
+            cardShell.classList.add("shake");
+            codeInputs.forEach(i => i.classList.add("bad"));
+            setTimeout(()=>codeInputs.forEach(i => i.classList.remove("bad")), 700);
+        }
+
+        function verifyCode() {
+            const code = getCode();
+            if (code.length === 6) {
+                verifyBtn.disabled = true;
+                const old = verifyBtn.textContent;
+                verifyBtn.textContent = "Verifying...";
+
+                // demo verify
+                setTimeout(() => {
+                    window.location.href = '/reset-password';
+                }, 650);
+
+                // fallback restore
+                setTimeout(() => {
+                    verifyBtn.textContent = old;
+                    setVerifyEnabled();
+                }, 1200);
+            } else {
+                toast("Please enter all 6 digits.");
+                markError();
+            }
+        }
+
+        // Resend timer
+        let resendCooldown = 0;
+        let resendTimer = null;
+
+        function startResendCooldown(sec){
+            resendCooldown = sec;
+            const link = document.getElementById("resendLink");
+            const timerText = document.getElementById("timerText");
+
+            link.classList.add("disabled");
+
+            clearInterval(resendTimer);
+            resendTimer = setInterval(()=>{
+                resendCooldown--;
+                timerText.textContent = resendCooldown > 0 ? ` (wait ${resendCooldown}s)` : "";
+                if(resendCooldown <= 0){
+                    clearInterval(resendTimer);
+                    link.classList.remove("disabled");
+                    timerText.textContent = "";
+                }
+            }, 1000);
+
+            timerText.textContent = ` (wait ${sec}s)`;
+        }
+
+        function resendCode(e) {
+            e.preventDefault();
+            const link = document.getElementById("resendLink");
+            if(link.classList.contains("disabled")) return;
+
+            codeInputs.forEach(input => input.value = '');
+            codeInputs[0].focus();
+            setVerifyEnabled();
+
+            toast("New code sent ✅ (demo)");
+            startResendCooldown(20);
+        }
+
+        // start cooldown initially (optional)
+        startResendCooldown(10);
+    </script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/auth.js"></script>
+
+</body>
+</html>

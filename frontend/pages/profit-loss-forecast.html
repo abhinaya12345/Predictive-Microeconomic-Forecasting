@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Business Insights - Profit & Loss Forecast</title>
+  <link rel="stylesheet" href="/assets/css/common.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg0:#050b18;
+      --bg1:#071225;
+      --bg2:#0f2346;
+      --bg3:#132a54;
+
+      --card: rgba(10, 26, 55, .66);
+      --card2: rgba(10, 26, 55, .54);
+      --stroke: rgba(96,165,250,.34);
+      --stroke2: rgba(96,165,250,.18);
+
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+
+      --blue:#60a5fa;
+      --blue2:#3b82f6;
+      --green:#22c55e;
+      --amber:#f59e0b;
+
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+      --shadow2: 0 12px 34px rgba(0,0,0,.30);
+
+      --r: 16px;
+    }
+
+    body{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 520px at 18% 8%, rgba(96,165,250,.16), transparent 60%),
+        radial-gradient(900px 520px at 82% 25%, rgba(245,158,11,.08), transparent 60%),
+        radial-gradient(1100px 900px at 55% 110%, rgba(59,130,246,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 22%, var(--bg2) 55%, var(--bg3));
+      overflow-x:hidden;
+    }
+
+    /* STAR / WHITE DOTS LAYER (updated) */
+    .noise{
+      position: fixed; inset:0;
+      z-index:0; pointer-events:none;
+      background-image:
+        radial-gradient(1px 1px at 6% 12%, rgba(255,255,255,.35) 50%, transparent 55%),
+        radial-gradient(1px 1px at 12% 30%, rgba(255,255,255,.22) 50%, transparent 55%),
+        radial-gradient(1px 1px at 20% 18%, rgba(255,255,255,.30) 50%, transparent 55%),
+        radial-gradient(1px 1px at 28% 8%, rgba(255,255,255,.18) 50%, transparent 55%),
+        radial-gradient(1px 1px at 35% 22%, rgba(255,255,255,.22) 50%, transparent 55%),
+        radial-gradient(1px 1px at 42% 14%, rgba(255,255,255,.26) 50%, transparent 55%),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,.18) 50%, transparent 55%),
+        radial-gradient(1px 1px at 58% 20%, rgba(255,255,255,.22) 50%, transparent 55%),
+        radial-gradient(1px 1px at 65% 8%, rgba(255,255,255,.18) 50%, transparent 55%),
+        radial-gradient(1px 1px at 72% 18%, rgba(255,255,255,.24) 50%, transparent 55%),
+        radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.20) 50%, transparent 55%),
+        radial-gradient(1px 1px at 88% 22%, rgba(255,255,255,.22) 50%, transparent 55%),
+
+        radial-gradient(1.6px 1.6px at 15% 55%, rgba(255,255,255,.14) 50%, transparent 55%),
+        radial-gradient(1.2px 1.2px at 33% 62%, rgba(255,255,255,.12) 50%, transparent 55%),
+        radial-gradient(1.4px 1.4px at 51% 70%, rgba(255,255,255,.10) 50%, transparent 55%),
+        radial-gradient(1.0px 1.0px at 76% 64%, rgba(255,255,255,.12) 50%, transparent 55%),
+        radial-gradient(1.2px 1.2px at 90% 78%, rgba(255,255,255,.10) 50%, transparent 55%);
+      opacity:.75;
+      filter: blur(.15px);
+      mix-blend-mode: screen;
+    }
+
+    /* Top nav */
+    nav{
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 44px;
+      border-bottom: 1px solid rgba(96,165,250,.18);
+      background: linear-gradient(180deg, rgba(5,11,24,.66), rgba(5,11,24,.18));
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      font-size: 22px;
+    }
+    .brandMark{
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3b82f6, #f59e0b);
+      position:relative;
+      box-shadow: 0 12px 26px rgba(59,130,246,.20);
+      overflow:hidden;
+    }
+    .brandMark:before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(transparent, rgba(255,255,255,.10)),
+        radial-gradient(18px 18px at 30% 20%, rgba(255,255,255,.25), transparent 60%);
+      opacity:.8;
+    }
+    .navLinks{
+      display:flex; gap: 28px; align-items:center;
+      list-style:none;
+      color: rgba(255,255,255,.78);
+      font-weight: 700;
+    }
+    .navLinks a{ color: inherit; text-decoration:none; }
+    .navLinks a:hover{ color: var(--blue); }
+
+    .pillBtn{
+      border: 1px solid rgba(96,165,250,.45);
+      background: rgba(96,165,250,.10);
+      color: rgba(255,255,255,.92);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 900;
+      cursor:pointer;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+    }
+    .pillBtn:hover{ transform: translateY(-1px); background: rgba(96,165,250,.14); border-color: rgba(96,165,250,.72); }
+
+    /* Layout */
+    .wrap{
+      position:relative;
+      z-index: 5;
+      max-width: 1400px;
+      margin: 0 auto;
+  	  padding: 32px 64px;
+    }
+
+    .titleRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap: 18px;
+      margin-top: 12px;
+      margin-bottom: 18px;
+    }
+    h1{
+      font-size: 38px;
+      letter-spacing:.2px;
+      margin-bottom: 6px;
+    }
+    .subtitle{
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.35;
+      max-width: 720px;
+    }
+
+    .topControls{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+
+    .seg{
+      display:flex;
+      border: 1px solid rgba(96,165,250,.30);
+      border-radius: 999px;
+      overflow:hidden;
+      background: rgba(10,26,55,.35);
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    }
+    .seg button{
+      border:none;
+      background: transparent;
+      color: rgba(255,255,255,.78);
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor:pointer;
+      transition: background .2s ease, color .2s ease;
+      display:flex; align-items:center; gap: 8px;
+    }
+    .seg button.active{
+      background: rgba(96,165,250,.22);
+      color: rgba(255,255,255,.95);
+    }
+
+    /* KPI row */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card{
+      border-radius: var(--r);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow2);
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(800px 180px at 15% 0%, rgba(96,165,250,.16), transparent 65%),
+        radial-gradient(600px 160px at 85% 35%, rgba(34,197,94,.10), transparent 70%),
+        radial-gradient(800px 220px at 50% 120%, rgba(59,130,246,.12), transparent 70%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .cardBody{ position:relative; z-index:2; padding: 14px 14px 12px; }
+
+    .kpiTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-weight: 900;
+      font-size: 14px;
+      color: rgba(255,255,255,.92);
+    }
+    .kpiIcon{
+      display:inline-flex; align-items:center; justify-content:center;
+      width: 30px; height: 30px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(96,165,250,.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,.15);
+      font-size: 16px;
+    }
+    .helpDot{
+      width: 20px; height: 20px;
+      border-radius: 999px;
+      display:flex; align-items:center; justify-content:center;
+      border: 1px solid rgba(96,165,250,.35);
+      background: rgba(96,165,250,.12);
+      font-size: 12px;
+      cursor: help;
+      user-select:none;
+    }
+
+    .kpiValue{
+      font-size: 28px;
+      font-weight: 950;
+      letter-spacing:.2px;
+      margin-bottom: 6px;
+    }
+    .kpiSub{
+      font-size: 12px;
+      color: rgba(255,255,255,.64);
+      font-weight: 700;
+    }
+    .kpiMiniLine{
+      margin-top: 8px;
+      height: 30px;
+    }
+    .kpiMiniLine svg{ width:100%; height:100%; display:block; }
+
+    /* Map card */
+    .mapCard{
+      border-radius: var(--r);
+      background: var(--card2);
+      border: 1px solid rgba(96,165,250,.38);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .mapTopBar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(96,165,250,.16);
+      background: rgba(6,16,36,.28);
+      backdrop-filter: blur(10px);
+    }
+    .mapTabs{
+      display:flex; gap: 8px; align-items:center;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(96,165,250,.28);
+      background: rgba(96,165,250,.10);
+      color: rgba(255,255,255,.88);
+      font-weight: 900;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .15s ease, border-color .2s ease, background .2s ease;
+      font-size: 13px;
+    }
+    .chip:hover{ transform: translateY(-1px); border-color: rgba(96,165,250,.65); background: rgba(96,165,250,.14); }
+    .chip.active{ background: rgba(96,165,250,.22); border-color: rgba(96,165,250,.75); }
+
+    .mapWrap{
+      position:relative;
+      height: 420px;
+    }
+    #map{ width:100%; height:100%; }
+
+    .mapRightControls{
+      position:absolute;
+      right: 12px;
+      bottom: 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      z-index: 700;
+    }
+    .mapBtn{
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(96,165,250,.32);
+      background: rgba(5,11,24,.70);
+      color: rgba(255,255,255,.92);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 14px 30px rgba(0,0,0,.30);
+      user-select:none;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+      font-weight: 900;
+    }
+    .mapBtn:hover{ transform: translateY(-1px); background: rgba(96,165,250,.14); border-color: rgba(96,165,250,.72); }
+
+    /* Lower grid */
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .grid2 .cardBody{ padding: 14px; }
+
+    .sectionTitle{
+      font-weight: 950;
+      letter-spacing:.2px;
+      margin-bottom: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+
+    /* Toggle inside cards */
+    .miniSeg{
+      display:inline-flex;
+      border: 1px solid rgba(96,165,250,.22);
+      background: rgba(10,26,55,.35);
+      border-radius: 10px;
+      overflow:hidden;
+    }
+    .miniSeg button{
+      border:none;
+      background: transparent;
+      color: rgba(255,255,255,.70);
+      font-weight: 900;
+      padding: 6px 10px;
+      cursor:pointer;
+    }
+    .miniSeg button.active{ background: rgba(96,165,250,.22); color: rgba(255,255,255,.95); }
+
+    /* Pie */
+    .pieRow{
+      display:grid;
+      grid-template-columns: 190px 1fr;
+      gap: 14px;
+      align-items:center;
+    }
+    .pie{
+      width: 190px; height: 190px;
+      border-radius: 999px;
+      position:relative;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.10);
+    }
+    .pie:after{
+      content:"";
+      position:absolute; inset: 52px;
+      border-radius:999px;
+      background: rgba(5,11,24,.65);
+      border: 1px solid rgba(96,165,250,.18);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .pieCenter{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      z-index:2;
+      font-weight: 950;
+      color: rgba(255,255,255,.92);
+      letter-spacing:.2px;
+      text-align:center;
+      gap: 3px;
+    }
+    .pieCenter .big{ font-size:14px; opacity:.95; }
+    .pieCenter .small{ font-size:12px; opacity:.70; font-weight:800; }
+
+    .legendList{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      font-weight: 800;
+      color: rgba(255,255,255,.80);
+    }
+    .lgItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      margin-right: 10px;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+    }
+    .lgLeft{
+      display:flex; align-items:center; min-width: 0;
+      color: rgba(255,255,255,.82);
+    }
+    .lgName{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .lgVal{ color: rgba(255,255,255,.90); display:flex; gap:10px; align-items:center; }
+    .pctPill{
+      font-size:12px;
+      font-weight:900;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.22);
+      background: rgba(96,165,250,.10);
+      color: rgba(255,255,255,.86);
+    }
+
+    /* Inflation chart (more attractive + interactive) */
+    .lineBox{
+      height: 180px;
+      border-radius: 14px;
+      background: rgba(5,11,24,.30);
+      border: 1px solid rgba(96,165,250,.14);
+      overflow:hidden;
+      position:relative;
+    }
+    .lineBox:before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(500px 180px at 25% 10%, rgba(245,158,11,.10), transparent 60%),
+        radial-gradient(500px 180px at 80% 40%, rgba(96,165,250,.10), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .lineBox svg{ width:100%; height:100%; display:block; position:relative; z-index:2; }
+
+    .lineLegendRow{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+      font-weight: 900;
+    }
+    .lineKey{
+      display:flex; align-items:center; gap: 8px;
+    }
+    .lineSwatch{
+      width: 16px; height: 4px;
+      border-radius: 999px;
+      background: rgba(245,158,11,.95);
+      box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+    }
+    .lineSwatch2{
+      width: 16px; height: 4px;
+      border-radius: 999px;
+      background: rgba(96,165,250,.70);
+      box-shadow: 0 0 0 3px rgba(96,165,250,.10);
+    }
+
+    /* Bottom row cards */
+    .gridBottom{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .bigNote{
+      font-size: 26px;
+      font-weight: 950;
+      color: rgba(34,197,94,.95);
+      margin-bottom: 6px;
+    }
+    .muted{
+      color: rgba(255,255,255,.70);
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    /* Tooltip */
+    #tip{
+      position: fixed;
+      z-index: 9999;
+      background: rgba(5,11,24,.92);
+      border: 1px solid rgba(96,165,250,.35);
+      color: rgba(255,255,255,.92);
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 850;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      pointer-events:none;
+      display:none;
+      backdrop-filter: blur(10px);
+      white-space:nowrap;
+    }
+
+    @media (max-width: 1100px){
+      nav{ padding: 14px 16px; }
+      .wrap{ padding: 22px 16px 44px; }
+      .kpis{ grid-template-columns: repeat(2, 1fr); }
+      .grid2, .gridBottom{ grid-template-columns: 1fr; }
+      .titleRow{ flex-direction:column; align-items:flex-start; }
+    }
+    /* Stars (same as Location Analysis) */
+    .stars{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 6;   /* must be above background + noise */
+    }
+    .star{
+      position:absolute;
+      width:2px;
+      height:2px;
+      background:rgba(255,255,255,0.6);
+      border-radius:50%;
+      animation: twinkle 3s infinite;
+    }
+    @keyframes twinkle{
+      0%,100%{opacity:.25}
+      50%{opacity:1}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="stars" id="stars"></div>
+  <div id="tip"></div>
+
+  <nav>
+    <div class="brand">
+      <div class="brandMark"></div>
+      <span>Business Insights</span>
+    </div>
+    <ul class="navLinks">
+      <li><a href="/#home">Home</a></li>
+      <li><a href="/home#features">Features</a></li>
+      <li><a href="/home#about">About</a></li>
+      <li><button class="pillBtn">Log In</button></li>
+    </ul>
+  </nav>
+
+  <div class="wrap">
+    <div class="titleRow">
+      <div>
+        <h1>Profit &amp; Loss Forecast</h1>
+        <div class="subtitle">
+          Forecast your business's profits and expenses to plan for a profitable future.
+          Click on the map or drag the pin — the dashboard updates instantly.
+        </div>
+      </div>
+
+      <div class="topControls">
+        <div class="seg" title="Changes how numbers are computed">
+          <button id="modeMonthly" class="active">Monthly</button>
+          <button id="modeYearly">Yearly ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpis">
+      <div class="card" id="kpiProfit">
+        <div class="cardBody">
+          <div class="kpiTop">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="kpiIcon">💰</div>
+              <div>Net Profit</div>
+            </div>
+            <div class="helpDot" title="Derived from revenue - expenses (demo)">?</div>
+          </div>
+          <div class="kpiValue" id="netProfit">$210,500</div>
+          <div class="kpiMiniLine">
+            <svg viewBox="0 0 120 30" preserveAspectRatio="none">
+              <path id="profitMiniFill" d="" fill="rgba(34,197,94,.16)"></path>
+              <path id="profitMiniLine" d="" stroke="rgba(34,197,94,.95)" stroke-width="2.2" fill="none" stroke-linecap="round"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="kpiRevenue">
+        <div class="cardBody">
+          <div class="kpiTop">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="kpiIcon">📈</div>
+              <div>Total Revenue</div>
+            </div>
+            <div class="helpDot" title="Estimated from location attractiveness (demo)">?</div>
+          </div>
+          <div class="kpiValue" id="revenue">$500,000</div>
+          <div class="kpiSub" id="revenueSub">Estimated with map location</div>
+        </div>
+      </div>
+
+      <div class="card" id="kpiExpenses">
+        <div class="cardBody">
+          <div class="kpiTop">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="kpiIcon">🧾</div>
+              <div>Total Expenses</div>
+            </div>
+            <div class="helpDot" title="Includes rent + salaries + inventory + utilities (demo)">?</div>
+          </div>
+          <div class="kpiValue" id="expenses">$289,500</div>
+          <div class="kpiSub" id="expensesSub">Auto-calculated</div>
+        </div>
+      </div>
+
+      <div class="card" id="kpiBreakeven">
+        <div class="cardBody">
+          <div class="kpiTop">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="kpiIcon">⛳</div>
+              <div>Break-even analysis</div>
+            </div>
+            <div class="helpDot" title="How long to recover initial costs (demo)">?</div>
+          </div>
+          <div class="kpiValue"><span id="breakevenMonths">8</span> Months</div>
+          <div class="kpiSub" id="beSub">Based on current trends</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="mapCard">
+      <div class="mapTopBar">
+        <div class="mapTabs">
+          <div class="chip active" id="tabMap">🗺️ Map</div>
+          <div class="chip" id="tabSat">🛰️ Satellite</div>
+        </div>
+
+        <div class="mapTabs">
+          <div class="chip" id="btnCenter" title="Center on marker">🎯 Center</div>
+          <div class="chip" id="btnMyLoc" title="Use my location">📍 My Loc</div>
+        </div>
+      </div>
+
+      <div class="mapWrap" id="mapView">
+        <div id="map"></div>
+
+        <div class="mapRightControls">
+          <div class="mapBtn" id="zoomIn">+</div>
+          <div class="mapBtn" id="zoomOut">−</div>
+          <div class="mapBtn" id="btnFull" title="Fullscreen">⛶</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOWER GRID -->
+    <div class="grid2">
+      <!-- Profit vs Expense -->
+      <div class="card">
+        <div class="cardBody">
+          <div class="sectionTitle">
+            <div>Profit vs. Expense</div>
+            <div class="miniSeg">
+              <button id="pvxMonthly" class="active">Monthly</button>
+              <button id="pvxYearly">Yearly</button>
+            </div>
+          </div>
+
+          <div class="pieRow">
+            <div class="pie" id="pie">
+              <div class="pieCenter" id="pieCenter">
+                <div class="big" id="pieTotal">Expenses</div>
+                <div class="small" id="pieTotalVal">$289,500</div>
+              </div>
+            </div>
+            <div class="legendList" id="pieLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inflation Impact -->
+      <div class="card">
+        <div class="cardBody">
+          <div class="sectionTitle">
+            <div>Inflation Impact</div>
+            <div class="miniSeg">
+              <button id="inflMonthly" class="active">Monthly</button>
+              <button id="inflYearly">Yearly</button>
+            </div>
+          </div>
+
+          <div class="lineBox" id="inflBox">
+            <svg viewBox="0 0 520 180" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="inflArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(245,158,11,.30)"/>
+                  <stop offset="100%" stop-color="rgba(245,158,11,0)"/>
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2.2" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- grid -->
+              <g opacity="0.25" stroke="rgba(96,165,250,.35)" stroke-width="1">
+                <line x1="26" y1="30" x2="502" y2="30"></line>
+                <line x1="26" y1="70" x2="502" y2="70"></line>
+                <line x1="26" y1="110" x2="502" y2="110"></line>
+                <line x1="26" y1="150" x2="502" y2="150"></line>
+              </g>
+
+              <path id="inflAreaPath" d="" fill="url(#inflArea)"></path>
+              <path id="inflLinePath" d="" stroke="rgba(245,158,11,.98)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow)"></path>
+              <path id="inflAvgPath" d="" stroke="rgba(96,165,250,.75)" stroke-width="2" fill="none" stroke-dasharray="6 6"></path>
+
+              <!-- interactive vertical line -->
+              <line id="inflVLine" x1="0" y1="18" x2="0" y2="150" stroke="rgba(255,255,255,.18)" stroke-width="1" opacity="0"></line>
+
+              <text id="inflTopText" x="470" y="28" fill="rgba(255,255,255,.92)" font-size="14" font-weight="900">4.1%</text>
+              <circle id="inflDot" cx="0" cy="0" r="5.5" fill="rgba(245,158,11,.98)" filter="url(#glow)" opacity="0"></circle>
+            </svg>
+          </div>
+
+          <div class="lineLegendRow">
+            <div class="lineKey"><span class="lineSwatch"></span> Inflation Rate</div>
+            <div class="lineKey"><span class="lineSwatch2"></span> Average <span id="inflAvgTxt">4.2%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="gridBottom">
+      <div class="card">
+        <div class="cardBody">
+          <div class="sectionTitle">Profit Prediction</div>
+          <div class="bigNote" id="profitPred">+ $25,000</div>
+          <div class="muted" id="profitPredSub">
+            Projected profit for December 2024 based on current trends.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardBody">
+          <div class="sectionTitle">Break-Even Analysis</div>
+          <div class="kpiValue" style="font-size:34px;margin-bottom:6px;"><span id="beBig">8</span> Months</div>
+          <div class="muted" id="beBigSub">
+            You will cover initial costs and break even in 8 months.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:26px;color:rgba(255,255,255,.55);font-weight:800;">
+      © 2024 BusinessInsights. All rights reserved.
+    </div>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+  	 /*********************
+     * Stars background (same as Location Analysis)
+     *********************/
+    const starsContainer = document.getElementById('stars');
+    if (starsContainer) {
+      for (let i = 0; i < 150; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.opacity = (0.25 + Math.random() * 0.75).toFixed(2);
+        starsContainer.appendChild(star);
+      }
+    }
+
+    /*********************
+     * Tooltip
+     *********************/
+    const tip = document.getElementById("tip");
+    function showTip(text, x, y){
+      tip.textContent = text;
+      tip.style.left = (x + 12) + "px";
+      tip.style.top  = (y + 12) + "px";
+      tip.style.display = "block";
+    }
+    function hideTip(){ tip.style.display = "none"; }
+
+    /*********************
+     * Helpers
+     *********************/
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const fmtMoney = (n) => "$" + Math.round(n).toLocaleString();
+    const seededRandom = (seed) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+
+    function animateNumber(el, from, to, duration=520, formatter=(v)=>String(v)){
+      const start = performance.now();
+      const diff = to - from;
+      function tick(now){
+        const t = clamp((now - start)/duration, 0, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const v = from + diff * eased;
+        el.textContent = formatter(v);
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /*********************
+     * Global mode
+     *********************/
+    let mode = "yearly";
+    const modeMonthlyBtn = document.getElementById("modeMonthly");
+    const modeYearlyBtn  = document.getElementById("modeYearly");
+
+    function syncMiniSeg(prefix, modeVal){
+      const a = document.getElementById(prefix+"Monthly");
+      const b = document.getElementById(prefix+"Yearly");
+      if (!a || !b) return;
+      a.classList.toggle("active", modeVal === "monthly");
+      b.classList.toggle("active", modeVal === "yearly");
+    }
+
+    function setMode(next){
+      mode = next;
+      modeMonthlyBtn.classList.toggle("active", mode === "monthly");
+      modeYearlyBtn.classList.toggle("active", mode === "yearly");
+      syncMiniSeg("pvx", mode);
+      syncMiniSeg("infl", mode);
+      const ll = marker.getLatLng();
+      refreshFromBackend(ll.lat, ll.lng);
+    }
+
+    modeMonthlyBtn.addEventListener("click", ()=>setMode("monthly"));
+    modeYearlyBtn.addEventListener("click", ()=>setMode("yearly"));
+    document.getElementById("pvxMonthly").addEventListener("click", ()=>setMode("monthly"));
+    document.getElementById("pvxYearly").addEventListener("click", ()=>setMode("yearly"));
+    document.getElementById("inflMonthly").addEventListener("click", ()=>setMode("monthly"));
+    document.getElementById("inflYearly").addEventListener("click", ()=>setMode("yearly"));
+
+    /*********************
+     * Leaflet map (REAL) - CLEAN (no overlays)
+     *********************/
+    // ✅ Load saved location from Setup page
+    /*********************
+    * Leaflet map (REAL) - CLEAN (no overlays)
+    *********************/
+
+    // ✅ Load saved location from Setup page (bi_location)
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem("bi_location") || "null");
+    } catch (e) {
+      saved = null;
+    }
+
+    const defaultCenter =
+      saved && saved.lat && saved.lng
+        ? [Number(saved.lat), Number(saved.lng)]
+        : [40.7440, -73.9950]; // fallback
+
+    const map = L.map("map", { zoomControl: false }).setView(defaultCenter, 13);
+
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    const esriSat = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 19, attribution: "Tiles &copy; Esri" }
+    );
+
+    // ✅ Marker icon
+    const storeIcon = L.icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const marker = L.marker(defaultCenter, { draggable: true, icon: storeIcon }).addTo(map);
+
+    // ✅ If saved address exists show popup
+    if (saved?.address) {
+      marker.bindPopup(`📍 <b>Saved Location</b><br>${saved.address}`).openPopup();
+    }
+
+
+    // Map UI buttons
+    document.getElementById("zoomIn").addEventListener("click", ()=>map.zoomIn());
+    document.getElementById("zoomOut").addEventListener("click", ()=>map.zoomOut());
+
+    document.getElementById("btnCenter").addEventListener("click", ()=>{
+      map.panTo(marker.getLatLng(), { animate:true, duration: .5 });
+    });
+
+    document.getElementById("btnMyLoc").addEventListener("click", ()=>{
+      if(!navigator.geolocation) return alert("Geolocation not supported.");
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          map.setView([ll.lat,ll.lng], 14, { animate:true });
+          marker.setLatLng(ll);
+          refreshFromBackend(ll.lat,ll.lng);
+        },
+        ()=>alert("Could not access your location."),
+        { enableHighAccuracy:true, timeout:8000 }
+      );
+    });
+
+    const tabMap = document.getElementById("tabMap");
+    const tabSat = document.getElementById("tabSat");
+
+    tabMap.addEventListener("click", ()=>{
+      tabMap.classList.add("active");
+      tabSat.classList.remove("active");
+      map.removeLayer(esriSat);
+      osm.addTo(map);
+    });
+
+    tabSat.addEventListener("click", ()=>{
+      tabSat.classList.add("active");
+      tabMap.classList.remove("active");
+      map.removeLayer(osm);
+      esriSat.addTo(map);
+    });
+
+    // Fullscreen
+    const mapView = document.getElementById("mapView");
+    document.getElementById("btnFull").addEventListener("click", async ()=>{
+      try{
+        if(!document.fullscreenElement){
+          await mapView.requestFullscreen();
+          setTimeout(()=>map.invalidateSize(), 220);
+        }else{
+          await document.exitFullscreen();
+          setTimeout(()=>map.invalidateSize(), 220);
+        }
+      }catch(e){
+        alert("Fullscreen not available.");
+      }
+    });
+    document.addEventListener("fullscreenchange", ()=>setTimeout(()=>map.invalidateSize(), 220));
+
+    // Click map to move marker
+    map.on("click", (e)=>{
+      marker.setLatLng(e.latlng);
+      refreshFromBackend(e.latlng.lat, e.latlng.lng);
+    });
+    marker.on("dragend", ()=>{
+      const ll = marker.getLatLng();
+      refreshFromBackend(ll.lat, ll.lng);
+    });
+
+    /*********************
+     * Mini charts render
+     *********************/
+    const profitMiniLine = document.getElementById("profitMiniLine");
+    const profitMiniFill = document.getElementById("profitMiniFill");
+
+    function setMiniProfitLine(score){
+      const pts = [
+        [0, 22 - score*6],
+        [20, 23 - score*7],
+        [40, 20 - score*8],
+        [60, 18 - score*9],
+        [80, 14 - score*8],
+        [100, 10 - score*10],
+        [120, 8 - score*9]
+      ];
+      const d = pts.map((p,i)=> (i===0?`M ${p[0]} ${p[1]}`:`L ${p[0]} ${p[1]}`)).join(" ");
+      profitMiniLine.setAttribute("d", d);
+      profitMiniFill.setAttribute("d", d + " L 120 30 L 0 30 Z");
+
+      const len = profitMiniLine.getTotalLength();
+      profitMiniLine.style.strokeDasharray = len;
+      profitMiniLine.style.strokeDashoffset = len;
+      profitMiniLine.getBoundingClientRect();
+      profitMiniLine.style.transition = "stroke-dashoffset 700ms cubic-bezier(.2,.85,.2,1)";
+      profitMiniLine.style.strokeDashoffset = "0";
+    }
+
+    // Profit vs Expense pie + legend with %
+    const pie = document.getElementById("pie");
+    const pieLegend = document.getElementById("pieLegend");
+    const pieTotalVal = document.getElementById("pieTotalVal");
+
+    function renderPie(breakdown, totalExpenses){
+      let start = 0;
+      const stops = breakdown.map(b=>{
+        const end = start + b.val*100;
+        const s = `${b.color} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+        start = end;
+        return s;
+      }).join(", ");
+      pie.style.background = `conic-gradient(${stops})`;
+      pieTotalVal.textContent = fmtMoney(totalExpenses);
+
+      pieLegend.innerHTML = breakdown.map(b=>{
+        const pct = Math.round(b.val*100);
+        return `
+          <div class="lgItem">
+            <div class="lgLeft">
+              <span class="dot" style="background:${b.color}"></span>
+              <span class="lgName">${b.name}</span>
+            </div>
+            <div class="lgVal">
+              <span class="pctPill">${pct}%</span>
+              <span>${fmtMoney(b.abs)}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /*********************
+     * Inflation impact (interactive + attractive)
+     *********************/
+    const inflAreaPath = document.getElementById("inflAreaPath");
+    const inflLinePath = document.getElementById("inflLinePath");
+    const inflAvgPath  = document.getElementById("inflAvgPath");
+    const inflTopText  = document.getElementById("inflTopText");
+    const inflDot      = document.getElementById("inflDot");
+    const inflAvgTxt   = document.getElementById("inflAvgTxt");
+    const inflVLine    = document.getElementById("inflVLine");
+
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    let currentInfl = [];
+
+    function setInflationLine(values){
+      currentInfl = values.slice();
+
+      const W = 520, H = 180;
+      const padL = 26, padR = 18, padT = 18, padB = 30;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+
+      const minV = Math.min(...values);
+      const maxV = Math.max(...values);
+
+      const pts = values.map((v,i)=>{
+        const x = padL + (i/(values.length-1))*innerW;
+        const y = padT + (1 - (v-minV)/(maxV-minV+1e-9))*innerH;
+        return [x,y];
+      });
+
+      const d = pts.map((p,i)=> (i===0?`M ${p[0]} ${p[1]}`:`L ${p[0]} ${p[1]}`)).join(" ");
+      inflLinePath.setAttribute("d", d);
+      inflAreaPath.setAttribute("d", d + ` L ${padL+innerW} ${padT+innerH} L ${padL} ${padT+innerH} Z`);
+
+      const avg = values.reduce((a,b)=>a+b,0)/values.length;
+      const yAvg = padT + (1 - (avg-minV)/(maxV-minV+1e-9))*innerH;
+      inflAvgPath.setAttribute("d", `M ${padL} ${yAvg} L ${padL+innerW} ${yAvg}`);
+
+      // default highlight last point
+      const last = pts[pts.length-1];
+      inflDot.setAttribute("cx", last[0]);
+      inflDot.setAttribute("cy", last[1]);
+      inflDot.style.opacity = 1;
+
+      inflVLine.setAttribute("x1", last[0]);
+      inflVLine.setAttribute("x2", last[0]);
+      inflVLine.style.opacity = 1;
+
+      inflTopText.textContent = values[values.length-1].toFixed(1) + "%";
+      inflAvgTxt.textContent = avg.toFixed(1) + "%";
+
+      // animate line drawing
+      const len = inflLinePath.getTotalLength();
+      inflLinePath.style.strokeDasharray = len;
+      inflLinePath.style.strokeDashoffset = len;
+      inflLinePath.getBoundingClientRect();
+      inflLinePath.style.transition = "stroke-dashoffset 700ms cubic-bezier(.2,.85,.2,1)";
+      inflLinePath.style.strokeDashoffset = "0";
+    }
+
+    // interactive hover for inflation
+    const inflBox = document.getElementById("inflBox");
+    inflBox.addEventListener("mousemove", (e)=>{
+      if(!currentInfl.length) return;
+
+      const rect = inflBox.getBoundingClientRect();
+      const xNorm = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      const idx = Math.round(xNorm * 11);
+
+      // recreate point coords like drawing
+      const W = 520, H = 180;
+      const padL = 26, padR = 18, padT = 18, padB = 30;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+
+      const minV = Math.min(...currentInfl);
+      const maxV = Math.max(...currentInfl);
+
+      const v = currentInfl[idx];
+      const cx = padL + (idx/11)*innerW;
+      const cy = padT + (1 - (v-minV)/(maxV-minV+1e-9))*innerH;
+
+      inflDot.setAttribute("cx", cx);
+      inflDot.setAttribute("cy", cy);
+      inflDot.style.opacity = 1;
+
+      inflVLine.setAttribute("x1", cx);
+      inflVLine.setAttribute("x2", cx);
+      inflVLine.style.opacity = 1;
+
+      inflTopText.textContent = v.toFixed(1) + "%";
+      showTip(`Inflation • ${monthNames[idx]}: ${v.toFixed(1)}%`, e.clientX, e.clientY);
+    });
+    inflBox.addEventListener("mouseleave", ()=>{
+      hideTip();
+    });
+    
+    async function refreshFromBackend(lat, lng) {
+      try {
+        const res = await API.forecastProfitLoss({
+          user_id: 1,
+          lat: lat,
+          lng: lng,
+          mode: mode   // "monthly" or "yearly"
+        });
+
+        const f = res.forecast;
+
+        // Update KPIs from backend (REAL ML output)
+        revenueEl.textContent  = fmtMoney(f.revenue);
+        expensesEl.textContent = fmtMoney(f.expenses);
+        netProfitEl.textContent = fmtMoney(f.profit);
+        breakevenMonthsEl.textContent = f.breakeven_months;
+
+        // Inflation from backend
+        setInflationLine(f.inflation.values);
+
+      } catch (e) {
+        console.warn("Forecast API failed:", e.message);
+      }
+    }
+
+    /*********************
+     * Main update: map -> numbers -> charts
+     *********************/
+    const netProfitEl = document.getElementById("netProfit");
+    const revenueEl   = document.getElementById("revenue");
+    const expensesEl  = document.getElementById("expenses");
+    const breakevenMonthsEl = document.getElementById("breakevenMonths");
+
+    const profitPredEl = document.getElementById("profitPred");
+    const profitPredSub = document.getElementById("profitPredSub");
+    const beBig = document.getElementById("beBig");
+    const beBigSub = document.getElementById("beBigSub");
+
+    let lastRevenue = 500000;
+    let lastExpenses = 289500;
+    let lastProfit = 210500;
+    let lastBE = 8;
+
+    function locationScore(lat, lng){
+      const seed = Math.floor(lat*1000 + lng*1000);
+      const a = seededRandom(seed + 11);
+      const b = seededRandom(seed + 77);
+      const c = seededRandom(seed + 123);
+      return clamp((a*0.55 + b*0.30 + c*0.15), 0, 1);
+    }
+
+    function refreshFromBackend(lat, lng){
+      const score = locationScore(lat, lng);
+      const demand = score; // clean map -> no overlays
+
+      const scale = (mode === "yearly") ? 12 : 1;
+
+      const baseRevenueM = 35000 + demand*85000;
+      const baseExpensesM = 21000 + demand*52000;
+      const revenue = baseRevenueM * scale;
+      const expenses = baseExpensesM * scale;
+
+      const profit = Math.max(0, revenue - expenses);
+
+      const fixedCost = (mode === "yearly") ? 240000 : 60000;
+      const monthlyProfit = Math.max(1000, (profit / scale));
+      const beMonths = clamp(Math.round(fixedCost / monthlyProfit), 2, 18);
+
+      animateNumber(revenueEl, lastRevenue, revenue, 620, (v)=>fmtMoney(v));
+      animateNumber(expensesEl, lastExpenses, expenses, 620, (v)=>fmtMoney(v));
+      animateNumber(netProfitEl, lastProfit, profit, 620, (v)=>fmtMoney(v));
+      animateNumber(breakevenMonthsEl, lastBE, beMonths, 520, (v)=>String(Math.round(v)));
+
+      lastRevenue = revenue;
+      lastExpenses = expenses;
+      lastProfit = profit;
+      lastBE = beMonths;
+
+      setMiniProfitLine(demand);
+
+      const pred = (mode === "yearly") ? (profit * (0.08 + demand*0.10)) : (profit * (0.12 + demand*0.16));
+      profitPredEl.textContent = "+ " + fmtMoney(pred).replace("$","$");
+      profitPredSub.textContent = mode === "yearly"
+        ? "Projected additional profit for this year based on current trends."
+        : "Projected profit for next month based on current trends.";
+
+      beBig.textContent = beMonths;
+      beBigSub.textContent = `You will cover initial costs and break even in ${beMonths} months.`;
+
+      document.getElementById("revenueSub").textContent = `Estimated with selected location (clean map view)`;
+      document.getElementById("expensesSub").textContent = `Includes rent + salaries + inventory (demo)`;
+
+      // expense pie breakdown
+      const rent = expenses * (0.35 - demand*0.05);
+      const salaries = expenses * (0.20 + demand*0.02);
+      const inventory = expenses * (0.18 + demand*0.04);
+      const utilities = expenses * (0.13 - demand*0.03);
+      const others = Math.max(0, expenses - (rent+salaries+inventory+utilities));
+
+      const breakdown = [
+        { name: "Rent",      abs: rent,      val: rent/expenses,      color: "rgba(59,130,246,.95)" },
+        { name: "Salaries",  abs: salaries,  val: salaries/expenses,  color: "rgba(245,158,11,.95)" },
+        { name: "Inventory", abs: inventory, val: inventory/expenses, color: "rgba(239,68,68,.92)" },
+        { name: "Utilities", abs: utilities, val: utilities/expenses, color: "rgba(96,165,250,.95)" },
+        { name: "Others",    abs: others,    val: others/expenses,    color: "rgba(34,197,94,.95)" },
+      ];
+      renderPie(breakdown, expenses);
+
+      // Inflation 12 months
+      const baseInfl = 2.2 + demand*2.4 + seededRandom(Math.floor(lat*1000+lng*1000)+9)*0.6;
+      const infl = Array.from({length:12}).map((_,i)=>{
+        const drift = (i/11) * (0.9 + demand*1.1);
+        const wobble = Math.sin((i+1)*0.9) * (0.18 + demand*0.12);
+        return (baseInfl + drift + wobble);
+      });
+      setInflationLine(infl);
+    }
+
+    /*********************
+     * KPI hover tips
+     *********************/
+    document.getElementById("kpiProfit").addEventListener("mousemove",(e)=>showTip("Net Profit = Revenue - Expenses (demo)", e.clientX, e.clientY));
+    document.getElementById("kpiProfit").addEventListener("mouseleave", hideTip);
+
+    document.getElementById("kpiRevenue").addEventListener("mousemove",(e)=>showTip("Revenue increases in better zones (demo)", e.clientX, e.clientY));
+    document.getElementById("kpiRevenue").addEventListener("mouseleave", hideTip);
+
+    document.getElementById("kpiExpenses").addEventListener("mousemove",(e)=>showTip("Expenses rise with demand (rent/salaries/inventory)", e.clientX, e.clientY));
+    document.getElementById("kpiExpenses").addEventListener("mouseleave", hideTip);
+
+    document.getElementById("kpiBreakeven").addEventListener("mousemove",(e)=>showTip("Break-even months based on monthly profit (demo)", e.clientX, e.clientY));
+    document.getElementById("kpiBreakeven").addEventListener("mouseleave", hideTip);
+
+    /*********************
+     * Init
+     *********************/
+    setMode("yearly");
+    marker.setLatLng(defaultCenter);
+    map.setView(defaultCenter, 13, { animate: true });
+    refreshFromBackend(defaultCenter[0], defaultCenter[1]);
+
+    // Optional: show popup with address if available
+    if(saved?.address){
+      marker.bindPopup(`📍 <b>Saved Location</b><br>${saved.address}`).openPopup();
+    }
+    setTimeout(()=>map.invalidateSize(), 250);
+  </script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/profit-loss.js"></script>
+
+</body>
+</html>
